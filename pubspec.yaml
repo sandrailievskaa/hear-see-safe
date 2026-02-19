@@ -1,0 +1,65 @@
+name: hear_and_see_safe
+description: A Flutter app for children with visual and hearing impairments
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  
+  # UI & Design
+  cupertino_icons: ^1.0.6
+  google_fonts: ^6.1.0
+  
+  # Accessibility & Audio
+  flutter_tts: ^4.2.5
+  speech_to_text: ^7.3.0
+  just_audio: ^0.9.36
+  audioplayers: ^5.2.1
+  vibration: ^3.1.6
+  
+  # Camera & Image Processing
+  camera: ^0.10.5+5
+  image_picker: ^1.0.7
+  tflite_flutter: ^0.10.4
+  
+  # State Management
+  provider: ^6.1.1
+  
+  # Localization
+  intl: ^0.20.2
+  easy_localization: ^3.0.3
+  
+  # Utilities
+  shared_preferences: ^2.2.2
+  path_provider: ^2.1.1
+  permission_handler: ^11.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/audio/
+    - assets/sounds/
+    - assets/models/
+    - assets/translations/
+    - assets/translations/en-US.json
+    - assets/translations/mk-MK.json
+    - assets/translations/sq-AL.json
+  
+#  fonts:
+#   - family: Accessibility
+#      fonts:
+#       - asset: assets/fonts/Accessibility-Regular.ttf
+
