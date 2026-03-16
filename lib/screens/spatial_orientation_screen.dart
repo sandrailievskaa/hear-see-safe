@@ -1,116 +1,141 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
 import 'package:hear_and_see_safe/utils/vibration_utils.dart';
 
+/// Просторна ориентација како игра за слепи: апликацијата ја чита целата инструкција
+/// (на пр. „на равна површина прошетајте 5 чекори напред, свртете лево...“).
+/// Корисникот извршува чекори со стрелки на тастатурата или копчиња на екранот
+/// и добива глас и вибрација дали е правилно или не.
 class SpatialOrientationScreen extends StatefulWidget {
   const SpatialOrientationScreen({super.key});
 
   @override
-  State<SpatialOrientationScreen> createState() => _SpatialOrientationScreenState();
+  State<SpatialOrientationScreen> createState() =>
+      _SpatialOrientationScreenState();
 }
 
 class _SpatialOrientationScreenState extends State<SpatialOrientationScreen> {
   late VoiceAssistantService _voiceAssistant;
-  List<String> _instructions = [];
-  int _currentStep = 0;
-  int _stepsCompleted = 0;
 
-  int _score = 0; // Додаено Score
+  static const List<String> _expectedSequence = [
+    'forward', 'forward', 'forward', 'forward', 'forward',
+    'turn_left',
+    'forward', 'forward', 'forward',
+    'turn_right',
+    'forward', 'forward',
+    'stop',
+  ];
+
+  int _currentIndex = 0;
+  bool _finished = false;
 
   @override
   void initState() {
     super.initState();
-    _voiceAssistant = Provider.of<VoiceAssistantService>(context, listen: false);
-    _generateInstructions();
+    _voiceAssistant =
+        Provider.of<VoiceAssistantService>(context, listen: false);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _speakFullInstruction();
+    });
+    _attachKeyListener();
   }
 
-  void _generateInstructions() {
-    _instructions = [
-      'spatial.walk_forward_5'.tr(),
-      'spatial.turn_left'.tr(),
-      'spatial.walk_forward_3'.tr(),
-      'spatial.turn_right'.tr(),
-      'spatial.walk_forward_2'.tr(),
-      'spatial.stop'.tr(),
-    ];
-    _currentStep = 0;
-    _stepsCompleted = 0;
-    _score = 0; // Reset score на почеток
-    _announceCurrentInstruction();
+  void _attachKeyListener() {
+    HardwareKeyboard.instance.addHandler(_keyHandler);
   }
 
-  Future<void> _announceCurrentInstruction() async {
-    if (_currentStep < _instructions.length) {
-      await _voiceAssistant.speak(
-        'spatial.instruction'.tr(args: [
-          (_currentStep + 1).toString(),
-          _instructions[_currentStep],
-        ]),
-      );
+  bool _keyHandler(KeyEvent event) {
+    if (event is! KeyDownEvent) return false;
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.arrowUp) {
+      _onAction('forward');
+      return true;
+    }
+    if (key == LogicalKeyboardKey.arrowLeft) {
+      _onAction('turn_left');
+      return true;
+    }
+    if (key == LogicalKeyboardKey.arrowRight) {
+      _onAction('turn_right');
+      return true;
+    }
+    if (key == LogicalKeyboardKey.arrowDown) {
+      _onAction('stop');
+      return true;
+    }
+    return false;
+  }
+
+  @override
+  void dispose() {
+    HardwareKeyboard.instance.removeHandler(_keyHandler);
+    super.dispose();
+  }
+
+  String get _langCode => context.locale.languageCode;
+
+  Future<void> _speakFullInstruction() async {
+    final msg = 'spatial.full_instruction'.tr();
+    if (msg.isNotEmpty) {
+      await _voiceAssistant.speakWithLanguage(msg, _langCode, vibrate: false);
+    }
+    await Future.delayed(const Duration(milliseconds: 300));
+    final hint = 'spatial.use_arrows_hint'.tr();
+    if (hint.isNotEmpty) {
+      await _voiceAssistant.speakWithLanguage(hint, _langCode, vibrate: false);
     }
   }
 
-  Future<void> _completeStep() async {
+  Future<void> _onAction(String action) async {
+    if (_finished) return;
+
+    final expected = _expectedSequence[_currentIndex];
+    final isCorrect = action == expected;
+
     if (await VibrationUtils.hasVibrator()) {
-      await VibrationUtils.vibrate(duration: 200);
+      await VibrationUtils.vibrate(duration: isCorrect ? 200 : 100);
     }
 
-    await _voiceAssistant.speak('spatial.step_completed'.tr());
-
-    setState(() {
-      _stepsCompleted++;
-      _currentStep++;
-      _score++; // Зголемување на Score при Заврши чекор
-    });
-
-    if (_currentStep < _instructions.length) {
-      await Future.delayed(const Duration(milliseconds: 500));
-      await _announceCurrentInstruction();
-    } else {
-      await _voiceAssistant.speak('spatial.all_completed'.tr());
-    }
-  }
-
-  Future<void> _repeatInstruction() async {
-    await _announceCurrentInstruction();
-    AccessibilityUtils.provideFeedback(context: context);
-
-    setState(() {
-      if (_score > 0) {
-        _score--; // Намалување на Score при Повтори
+    if (isCorrect) {
+      _currentIndex++;
+      await _voiceAssistant.speakWithLanguage(
+        'spatial.correct'.tr(),
+        _langCode,
+        vibrate: false,
+      );
+      if (_currentIndex >= _expectedSequence.length) {
+        _finished = true;
+        setState(() {});
+        await Future.delayed(const Duration(milliseconds: 600));
+        await _voiceAssistant.speakWithLanguage(
+          'spatial.all_completed'.tr(),
+          _langCode,
+          vibrate: false,
+        );
+      } else {
+        setState(() {});
       }
-    });
+    } else {
+      await _voiceAssistant.speakWithLanguage(
+        'spatial.incorrect'.tr(),
+        _langCode,
+        vibrate: false,
+      );
+      setState(() {});
+    }
   }
 
-  Widget _buildButton({required String text, required IconData icon, required VoidCallback onPressed}) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 24),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              text,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ],
-      ),
-    );
+  void _restart() {
+    setState(() {
+      _currentIndex = 0;
+      _finished = false;
+    });
+    _speakFullInstruction();
+    AccessibilityUtils.provideFeedback(context: context);
   }
 
   @override
@@ -118,126 +143,170 @@ class _SpatialOrientationScreenState extends State<SpatialOrientationScreen> {
     final backgroundColor = AccessibilityUtils.getBackgroundColor(context);
     final contrastColor = AccessibilityUtils.getContrastColor(context);
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        title: Text(
-          'features.spatial_orientation'.tr(),
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: contrastColor,
+    return Focus(
+      autofocus: true,
+      child: Scaffold(
+        backgroundColor: backgroundColor,
+        appBar: AppBar(
+          title: Text(
+            'spatial.title'.tr().isNotEmpty
+                ? 'spatial.title'.tr()
+                : 'features.spatial_orientation'.tr(),
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: contrastColor,
+            ),
           ),
+          backgroundColor: const Color(0xFF2196F3),
         ),
-        backgroundColor: const Color(0xFF2196F3),
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: Center(
-                child: Column(
+        body: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'spatial.progress'.tr(args: [
+                    (_currentIndex).toString(),
+                    _expectedSequence.length.toString(),
+                  ]),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: contrastColor,
+                  ),
+                ),
+              ),
+              if (_finished)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Text(
+                    'spatial.all_completed'.tr(),
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green.shade700,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              else
+                Expanded(
+                  child: Center(
+                    child: Icon(
+                      Icons.explore,
+                      size: 120,
+                      color: contrastColor.withOpacity(0.8),
+                    ),
+                  ),
+                ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
-                      width: 200,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2196F3),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: contrastColor,
-                          width: 4,
-                        ),
-                      ),
-                      child: Icon(
-                        Icons.navigation,
-                        size: 100,
-                        color: contrastColor,
-                      ),
+                    _arrowButton(
+                      context,
+                      icon: Icons.arrow_upward,
+                      action: 'forward',
+                      label: 'spatial.button_forward'.tr(),
+                      contrastColor: contrastColor,
                     ),
-                    const SizedBox(height: 40),
-                    if (_currentStep < _instructions.length)
-                      Text(
-                        _instructions[_currentStep],
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: contrastColor,
-                        ),
-                        textAlign: TextAlign.center,
-                      )
-                    else
-                      Text(
-                        'spatial.all_completed'.tr(),
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF4CAF50),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    const SizedBox(height: 20),
-                    // ================= Score долу ===================
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Score: ',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: contrastColor,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          _score.toString(),
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green[700],
-                          ),
-                        ),
-                      ],
-                    ),
-                    // ================================================
                   ],
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Expanded(
-                    child: _buildButton(
-                      text: 'spatial.repeat'.tr(),
-                      icon: Icons.replay,
-                      onPressed: _repeatInstruction,
-                    ),
+                  _arrowButton(
+                    context,
+                    icon: Icons.arrow_back,
+                    action: 'turn_left',
+                    label: 'spatial.button_left'.tr(),
+                    contrastColor: contrastColor,
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _currentStep < _instructions.length
-                        ? _buildButton(
-                      text: 'spatial.complete'.tr(),
-                      icon: Icons.check,
-                      onPressed: _completeStep,
-                    )
-                        : _buildButton(
-                      text: 'spatial.restart'.tr(),
-                      icon: Icons.refresh,
-                      onPressed: () {
-                        _generateInstructions();
-                        AccessibilityUtils.provideFeedback(context: context);
-                      },
-                    ),
+                  const SizedBox(width: 24),
+                  SizedBox(width: 72, height: 56),
+                  const SizedBox(width: 24),
+                  _arrowButton(
+                    context,
+                    icon: Icons.arrow_forward,
+                    action: 'turn_right',
+                    label: 'spatial.button_right'.tr(),
+                    contrastColor: contrastColor,
                   ),
                 ],
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                child: _arrowButton(
+                  context,
+                  icon: Icons.stop,
+                  action: 'stop',
+                  label: 'spatial.button_stop'.tr(),
+                  contrastColor: contrastColor,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: _speakFullInstruction,
+                        icon: const Icon(Icons.replay),
+                        label: Text('spatial.repeat'.tr()),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          backgroundColor: Colors.grey.shade700,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: _restart,
+                        icon: const Icon(Icons.refresh),
+                        label: Text('spatial.restart'.tr()),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          backgroundColor: const Color(0xFF2196F3),
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _arrowButton(
+    BuildContext context, {
+    required IconData icon,
+    required String action,
+    required String label,
+    required Color contrastColor,
+  }) {
+    return Semantics(
+      label: label,
+      button: true,
+      child: SizedBox(
+        width: 72,
+        height: 56,
+        child: ElevatedButton(
+          onPressed: _finished ? null : () => _onAction(action),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF2196F3),
+            foregroundColor: Colors.white,
+            padding: EdgeInsets.zero,
+          ),
+          child: Icon(icon, size: 32),
         ),
       ),
     );

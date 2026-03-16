@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
@@ -68,14 +69,15 @@ class _CyberSafetyScreenState extends State<CyberSafetyScreen> {
   }
 
   Future<void> _announceQuestion() async {
-    if (_currentQuestion < _questions.length) {
-      final q = _questions[_currentQuestion];
-      await _voiceAssistant.speak(q.question);
-      await Future.delayed(const Duration(milliseconds: 500));
-      for (int i = 0; i < q.options.length; i++) {
-        await _voiceAssistant.speak('${i + 1}. ${q.options[i]}');
-        await Future.delayed(const Duration(milliseconds: 300));
-      }
+    if (!mounted || _currentQuestion >= _questions.length) return;
+    final langCode = context.locale.languageCode;
+    final q = _questions[_currentQuestion];
+    await _voiceAssistant.speakWithLanguage(q.question, langCode, vibrate: false);
+    await Future.delayed(const Duration(milliseconds: 500));
+    for (int i = 0; i < q.options.length; i++) {
+      if (!mounted) return;
+      await _voiceAssistant.speakWithLanguage('${i + 1}. ${q.options[i]}', langCode, vibrate: false);
+      await Future.delayed(const Duration(milliseconds: 300));
     }
   }
 
@@ -93,17 +95,18 @@ class _CyberSafetyScreenState extends State<CyberSafetyScreen> {
       await VibrationUtils.vibrate(duration: isCorrect ? 200 : 100);
     }
 
+    final langCode = context.locale.languageCode;
     if (isCorrect) {
       setState(() {
         _score++;
       });
-      await _voiceAssistant.speak('cyber.correct'.tr());
+      await _voiceAssistant.speakWithLanguage('cyber.correct'.tr(), langCode, vibrate: false);
     } else {
-      await _voiceAssistant.speak('cyber.incorrect'.tr());
+      await _voiceAssistant.speakWithLanguage('cyber.incorrect'.tr(), langCode, vibrate: false);
     }
 
     await Future.delayed(const Duration(milliseconds: 500));
-    await _voiceAssistant.speak(q.explanation);
+    await _voiceAssistant.speakWithLanguage(q.explanation, langCode, vibrate: false);
     await Future.delayed(const Duration(seconds: 3));
 
     _nextQuestion();
@@ -122,10 +125,13 @@ class _CyberSafetyScreenState extends State<CyberSafetyScreen> {
   }
 
   Future<void> _showResults() async {
-    await _voiceAssistant.speak('cyber.results'.tr(args: [
-      _score.toString(),
-      _questions.length.toString(),
-    ]));
+    if (!mounted) return;
+    final langCode = context.locale.languageCode;
+    await _voiceAssistant.speakWithLanguage(
+      'cyber.results'.tr(args: [_score.toString(), _questions.length.toString()]),
+      langCode,
+      vibrate: false,
+    );
   }
 
   void _restart() {
@@ -242,18 +248,22 @@ class _CyberSafetyScreenState extends State<CyberSafetyScreen> {
 
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: 70, // зголемена висина за wrap текст
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: buttonColor,
-                            ),
-                            onPressed: () => _selectAnswer(index),
-                            child: Text(
-                              option,
-                              textAlign: TextAlign.center,
-                              softWrap: true,
+                        child: Semantics(
+                          label: '${index + 1}. $option',
+                          button: true,
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: 70,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: buttonColor,
+                              ),
+                              onPressed: () => _selectAnswer(index),
+                              child: Text(
+                                option,
+                                textAlign: TextAlign.center,
+                                softWrap: true,
+                              ),
                             ),
                           ),
                         ),

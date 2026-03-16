@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:hear_and_see_safe/providers/accessibility_provider.dart';
 import 'package:hear_and_see_safe/providers/app_state_provider.dart';
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
@@ -51,7 +52,8 @@ class AccessibilityUtils {
     }
 
     if (audioFeedback != null && voiceAssistant != null && appState.isVoiceAssistantEnabled) {
-      await voiceAssistant.speak(audioFeedback, vibrate: false);
+      final langCode = context.locale.languageCode;
+      await voiceAssistant.speakWithLanguage(audioFeedback, langCode, vibrate: false);
     }
   }
 

@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
+import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
 import 'package:hear_and_see_safe/utils/vibration_utils.dart';
-import 'package:audioplayers/audioplayers.dart';
 
+/// Гласовен Понг: верзија на пинг-понг со звук. Топката се „слуша“ како се движи
+/// преку вибрации и глас — играчот допира на екранот во вистински момент за удар.
 class VoicePongScreen extends StatefulWidget {
   const VoicePongScreen({super.key});
 
@@ -15,274 +18,288 @@ class VoicePongScreen extends StatefulWidget {
 
 class _VoicePongScreenState extends State<VoicePongScreen> {
   late VoiceAssistantService _voiceAssistant;
-  final AudioPlayer _audioPlayer = AudioPlayer();
+
   Timer? _gameTimer;
   double _ballX = 0.5;
   double _ballY = 0.5;
-  double _ballSpeedX = 0.02;
-  double _ballSpeedY = 0.02;
-  double _paddleY = 0.5;
+  double _ballSpeedX = -0.018;
+  double _ballSpeedY = 0.012;
   int _score = 0;
   int _misses = 0;
   bool _isPlaying = false;
-  String _lastDirection = '';
+  static const int _maxMisses = 3;
+
+  int _lastTickMs = 0;
+  bool _announcedComing = false;
 
   @override
   void initState() {
     super.initState();
-    _voiceAssistant = Provider.of<VoiceAssistantService>(context, listen: false);
-    _announceInstructions();
+    _voiceAssistant =
+        Provider.of<VoiceAssistantService>(context, listen: false);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _announceInstructions());
   }
 
+  String get _langCode => context.locale.languageCode;
+
   Future<void> _announceInstructions() async {
-    await _voiceAssistant.speak('pong.instructions'.tr());
+    await _voiceAssistant.speakWithLanguage(
+      'pong.instructions'.tr(),
+      _langCode,
+      vibrate: false,
+    );
   }
 
   void _startGame() {
     if (_isPlaying) return;
-
     setState(() {
       _isPlaying = true;
       _score = 0;
       _misses = 0;
       _ballX = 0.5;
       _ballY = 0.5;
-      _paddleY = 0.5;
+      _ballSpeedX = -0.018;
+      _ballSpeedY = 0.012;
+      _announcedComing = false;
+      _lastTickMs = DateTime.now().millisecondsSinceEpoch;
     });
-
-    _gameTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
-      _updateGame();
-    });
-
-    _voiceAssistant.speak('pong.start'.tr());
+    _gameTimer = Timer.periodic(const Duration(milliseconds: 40), (_) => _updateGame());
+    _voiceAssistant.speakWithLanguage('pong.start'.tr(), _langCode, vibrate: false);
   }
 
   void _stopGame() {
     _gameTimer?.cancel();
-    setState(() {
-      _isPlaying = false;
-    });
-    _voiceAssistant.speak('pong.game_over'.tr(args: [_score.toString()]));
+    _gameTimer = null;
+    setState(() => _isPlaying = false);
+    _voiceAssistant.speakWithLanguage(
+      'pong.game_over'.tr(args: [_score.toString(), _misses.toString()]),
+      _langCode,
+      vibrate: false,
+    );
   }
 
   void _updateGame() {
-    if (!_isPlaying) return;
+    if (!_isPlaying || !mounted) return;
+
+    final now = DateTime.now().millisecondsSinceEpoch;
+    bool didMiss = false;
+    int newMisses = _misses;
 
     setState(() {
       _ballX += _ballSpeedX;
       _ballY += _ballSpeedY;
 
-      // Bounce off walls
       if (_ballY <= 0 || _ballY >= 1) {
         _ballSpeedY = -_ballSpeedY;
       }
 
-      // Check collision with paddle
-      if (_ballX <= 0.1 && (_ballY - _paddleY).abs() < 0.15) {
-        _ballSpeedX = -_ballSpeedX;
-        _score++;
-        VibrationUtils.hasVibrator().then((hasVibrator) {
-          if (hasVibrator) {
-            VibrationUtils.vibrate(duration: 100);
-          }
-        });
-        _voiceAssistant.speak('pong.hit'.tr());
+      if (_ballX >= 1) {
+        _ballSpeedX = -_ballSpeedX.abs();
       }
 
-      // Ball missed
       if (_ballX < 0) {
+        didMiss = true;
         _misses++;
+        newMisses = _misses;
         _ballX = 0.5;
         _ballY = 0.5;
-        _ballSpeedX = 0.02;
-        _ballSpeedY = 0.02;
-        VibrationUtils.hasVibrator().then((hasVibrator) {
-          if (hasVibrator) {
-            VibrationUtils.vibrate(duration: 200, pattern: [0, 100, 50, 100]);
-          }
-        });
-        _voiceAssistant.speak('pong.miss'.tr());
+        _ballSpeedX = -0.018 - (_score * 0.002).clamp(0.0, 0.015);
+        _ballSpeedY = 0.012;
+        _announcedComing = false;
       }
 
-      // Game over condition
-      if (_misses >= 3) {
+      bool inApproach = _ballSpeedX < 0 && _ballX < 0.45;
+      bool inHitZone = _ballSpeedX < 0 && _ballX < 0.22;
+
+      if (inHitZone && !_announcedComing) {
+        _announcedComing = true;
+        _voiceAssistant.speakWithLanguage('pong.coming'.tr(), _langCode, vibrate: false);
+      }
+
+      if (inApproach) {
+        final interval = inHitZone ? 70 : 130;
+        if (now - _lastTickMs >= interval) {
+          _lastTickMs = now;
+          VibrationUtils.hasVibrator().then((ok) {
+            if (ok) VibrationUtils.vibrate(duration: 25);
+          });
+        }
+      } else if (_ballX > 0.5) {
+        _announcedComing = false;
+      }
+    });
+
+    if (didMiss) {
+      VibrationUtils.hasVibrator().then((ok) {
+        if (ok) VibrationUtils.vibrate(duration: 150);
+      });
+      _voiceAssistant.speakWithLanguage('pong.miss'.tr(), _langCode, vibrate: false);
+      if (newMisses >= _maxMisses) {
         _stopGame();
       }
-
-      _announceBallPosition();
-    });
-  }
-
-  Future<void> _announceBallPosition() async {
-    String direction = '';
-    if (_ballX < 0.3) {
-      direction = 'pong.left'.tr();
-    } else if (_ballX > 0.7) {
-      direction = 'pong.right'.tr();
-    } else {
-      direction = 'pong.center'.tr();
-    }
-
-    if (direction != _lastDirection) {
-      _lastDirection = direction;
-      if (DateTime.now().millisecond % 500 < 50) {
-        await _voiceAssistant.speak(direction);
-      }
     }
   }
 
-  void _movePaddleUp() {
-    if (_isPlaying) {
+  void _onTap() {
+    if (!_isPlaying) return;
+
+    final inHitZone = _ballX < 0.25 && _ballSpeedX < 0;
+    if (inHitZone) {
       setState(() {
-        _paddleY = (_paddleY - 0.1).clamp(0.0, 1.0);
-      });
-    }
-  }
-
-  void _movePaddleDown() {
-    if (_isPlaying) {
-      setState(() {
-        _paddleY = (_paddleY + 0.1).clamp(0.0, 1.0);
-      });
-    }
-  }
-
-  void _tapToHit() {
-    if (_isPlaying && _ballX <= 0.15) {
-      setState(() {
+        _ballSpeedX = (_ballSpeedX.abs() + 0.0015).clamp(0.018, 0.045);
         _ballSpeedX = -_ballSpeedX;
         _score++;
       });
-      VibrationUtils.hasVibrator().then((hasVibrator) {
-        if (hasVibrator) {
-          VibrationUtils.vibrate(duration: 100);
-        }
+      VibrationUtils.hasVibrator().then((ok) {
+        if (ok) VibrationUtils.vibrate(duration: 100);
       });
-      _voiceAssistant.speak('pong.hit'.tr());
+      _voiceAssistant.speakWithLanguage('pong.hit'.tr(), _langCode, vibrate: false);
     }
   }
 
   @override
   void dispose() {
     _gameTimer?.cancel();
-    _audioPlayer.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final backgroundColor = AccessibilityUtils.getBackgroundColor(context);
+    final contrastColor = AccessibilityUtils.getContrastColor(context);
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: Text('features.voice_pong'.tr()),
+        title: Text(
+          'pong.title'.tr().isNotEmpty
+              ? 'pong.title'.tr()
+              : 'features.voice_pong'.tr(),
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: contrastColor,
+          ),
+        ),
+        backgroundColor: const Color(0xFF2196F3),
       ),
       body: SafeArea(
         child: Column(
           children: [
-            // Score and Misses
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  Flexible(
-                    child: Text(
-                      'pong.score'.tr(args: [_score.toString()]),
-                      overflow: TextOverflow.ellipsis,
+                  Text(
+                    'pong.score'.tr(args: [_score.toString()]),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: contrastColor,
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Flexible(
-                    child: Text(
-                      'pong.misses'.tr(args: [_misses.toString()]),
-                      overflow: TextOverflow.ellipsis,
+                  Text(
+                    'pong.misses'.tr(args: [_misses.toString()]),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: _misses >= 2 ? Colors.red : contrastColor,
                     ),
                   ),
                 ],
               ),
             ),
-            // Game Area
             Expanded(
-              child: GestureDetector(
-                onTap: _tapToHit,
-                child: Container(
-                  margin: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Stack(
-                    children: [
-                      // Paddle
-                      Positioned(
-                        left: 20,
-                        top: MediaQuery.of(context).size.height * 0.4 * _paddleY,
-                        child: Container(
-                          width: 20,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            color: Colors.blue,
-                            borderRadius: BorderRadius.circular(10),
+              child: Semantics(
+                label: 'pong.instructions'.tr(),
+                button: true,
+                child: GestureDetector(
+                  onTap: _onTap,
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.black87,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: contrastColor, width: 4),
+                    ),
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          left: 16,
+                          top: MediaQuery.of(context).size.height * 0.35 * _ballY.clamp(0.05, 0.95),
+                          child: Container(
+                            width: 16,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2196F3),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
                         ),
-                      ),
-                      // Ball
-                      Positioned(
-                        left: MediaQuery.of(context).size.width * 0.4 * _ballX,
-                        top: MediaQuery.of(context).size.height * 0.4 * _ballY,
-                        child: Container(
-                          width: 30,
-                          height: 30,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
+                        Positioned(
+                          left: MediaQuery.of(context).size.width * 0.35 * _ballX.clamp(0.0, 1.0) + 12,
+                          top: MediaQuery.of(context).size.height * 0.35 * _ballY.clamp(0.0, 1.0) + 40,
+                          child: Container(
+                            width: 24,
+                            height: 24,
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-            // Controls
             Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+              child: Row(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      SizedBox(
-                        width: 100,
-                        height: 80,
-                        child: ElevatedButton(
-                          onPressed: _movePaddleUp,
-                          child: const Text('↑'),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 100,
-                        height: 80,
-                        child: ElevatedButton(
-                          onPressed: _movePaddleDown,
-                          child: const Text('↓'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  // Start/Stop Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 60,
-                    child: ElevatedButton.icon(
-                      onPressed: _isPlaying ? _stopGame : _startGame,
-                      icon: Icon(_isPlaying ? Icons.stop : Icons.play_arrow),
-                      label: Flexible(
-                        child: Text(
+                  Expanded(
+                    child: SizedBox(
+                      height: 56,
+                      child: ElevatedButton.icon(
+                        onPressed: _isPlaying ? _stopGame : _startGame,
+                        icon: Icon(_isPlaying ? Icons.stop : Icons.play_arrow),
+                        label: Text(
                           _isPlaying ? 'pong.stop'.tr() : 'pong.start'.tr(),
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _isPlaying ? Colors.red.shade700 : const Color(0xFF4CAF50),
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: SizedBox(
+                      height: 56,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          if (_isPlaying) _stopGame();
+                          _startGame();
+                          AccessibilityUtils.provideFeedback(context: context);
+                        },
+                        icon: const Icon(Icons.refresh),
+                        label: Text('pong.restart'.tr()),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2196F3),
+                          foregroundColor: Colors.white,
+                          textStyle: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),

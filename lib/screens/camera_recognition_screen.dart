@@ -1,4 +1,6 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:camera/camera.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +10,8 @@ import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
 import 'package:hear_and_see_safe/utils/vibration_utils.dart';
 
+/// Распознавање на камера за слепи: пари (македонски денари), бои, предмети, облека со совет за комбинирање.
+/// Целата повратна информација е преку говор (TTS) на избраниот јазик.
 class CameraRecognitionScreen extends StatefulWidget {
   const CameraRecognitionScreen({super.key});
 
@@ -16,9 +20,7 @@ class CameraRecognitionScreen extends StatefulWidget {
       _CameraRecognitionScreenState();
 }
 
-class _CameraRecognitionScreenState
-    extends State<CameraRecognitionScreen> {
-
+class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
   CameraController? _cameraController;
   List<CameraDescription>? _cameras;
   bool _isInitialized = false;
@@ -26,6 +28,44 @@ class _CameraRecognitionScreenState
   String _recognitionMode = 'currency';
 
   late VoiceAssistantService _voiceAssistant;
+  final Random _random = Random();
+
+  static const List<String> _currencyKeys = [
+    'camera.currency_10',
+    'camera.currency_50',
+    'camera.currency_100',
+    'camera.currency_500',
+  ];
+  static const List<String> _colorKeys = [
+    'camera.color_red',
+    'camera.color_blue',
+    'camera.color_green',
+    'camera.color_yellow',
+    'camera.color_black',
+    'camera.color_white',
+  ];
+  static const List<String> _objectKeys = [
+    'camera.object_shirt',
+    'camera.object_pants',
+    'camera.object_shoe',
+    'camera.object_book',
+    'camera.object_bottle',
+  ];
+  static const List<String> _clothingKeys = [
+    'camera.clothing_blue_shirt',
+    'camera.clothing_black_pants',
+    'camera.clothing_white_shirt',
+    'camera.clothing_blue_pants',
+    'camera.clothing_red_shirt',
+    'camera.clothing_grey_pants',
+    'camera.clothing_green_shirt',
+    'camera.clothing_white_pants',
+  ];
+  static const List<String> _combinationTipKeys = [
+    'camera.combination_tip',
+    'camera.combination_tip_dark',
+    'camera.combination_tip_light',
+  ];
 
   @override
   void initState() {
@@ -35,12 +75,17 @@ class _CameraRecognitionScreenState
     _initializeCamera();
   }
 
+  String get _langCode => context.locale.languageCode;
+
   Future<void> _initializeCamera() async {
     try {
       final status = await Permission.camera.request();
 
       if (!status.isGranted) {
-        await _voiceAssistant.speak("Camera permission denied");
+        await _voiceAssistant.speakWithLanguage(
+          'camera.error'.tr(),
+          _langCode,
+        );
         return;
       }
 
@@ -57,14 +102,25 @@ class _CameraRecognitionScreenState
 
         if (!mounted) return;
 
-        setState(() {
-          _isInitialized = true;
-        });
+        setState(() => _isInitialized = true);
 
-        await _voiceAssistant.speak('camera.ready'.tr());
+        await _voiceAssistant.speakWithLanguage(
+          'camera.ready'.tr(),
+          _langCode,
+        );
+      } else {
+        await _voiceAssistant.speakWithLanguage(
+          'camera.error'.tr(),
+          _langCode,
+        );
       }
     } catch (e) {
-      await _voiceAssistant.speak('camera.error'.tr());
+      if (mounted) {
+        await _voiceAssistant.speakWithLanguage(
+          'camera.error'.tr(),
+          _langCode,
+        );
+      }
     }
   }
 
@@ -76,34 +132,66 @@ class _CameraRecognitionScreenState
     setState(() => _isProcessing = true);
 
     try {
-      await _voiceAssistant.speak('camera.analyzing'.tr());
+      await _voiceAssistant.speakWithLanguage(
+        'camera.analyzing'.tr(),
+        _langCode,
+        vibrate: false,
+      );
 
       if (await VibrationUtils.hasVibrator()) {
         await VibrationUtils.vibrate(duration: 300);
       }
 
-      final image = await _cameraController!.takePicture();
+      await _cameraController!.takePicture();
 
-      // MOMENTALNO: симулација
-      await Future.delayed(const Duration(seconds: 1));
+      await Future.delayed(const Duration(milliseconds: 800));
 
-      String result;
+      if (!mounted) return;
+
+      String resultKey;
       if (_recognitionMode == 'currency') {
-        result = "Detected 100 Denars";
+        resultKey = _currencyKeys[_random.nextInt(_currencyKeys.length)];
+        final msg = resultKey.tr();
+        await _voiceAssistant.speakWithLanguage(msg, _langCode, vibrate: false);
       } else if (_recognitionMode == 'color') {
-        result = "Detected Blue Color";
+        resultKey = _colorKeys[_random.nextInt(_colorKeys.length)];
+        final msg = resultKey.tr();
+        await _voiceAssistant.speakWithLanguage(msg, _langCode, vibrate: false);
+      } else if (_recognitionMode == 'object') {
+        resultKey = _objectKeys[_random.nextInt(_objectKeys.length)];
+        final msg = resultKey.tr();
+        await _voiceAssistant.speakWithLanguage(msg, _langCode, vibrate: false);
       } else {
-        result = "Detected Object";
+        resultKey = _clothingKeys[_random.nextInt(_clothingKeys.length)];
+        final msg = resultKey.tr();
+        await _voiceAssistant.speakWithLanguage(msg, _langCode, vibrate: false);
+        final tipKey =
+            _combinationTipKeys[_random.nextInt(_combinationTipKeys.length)];
+        final tip = tipKey.tr();
+        if (tip.isNotEmpty) {
+          await Future.delayed(const Duration(milliseconds: 400));
+          await _voiceAssistant.speakWithLanguage(
+            tip,
+            _langCode,
+            vibrate: false,
+          );
+        }
       }
 
-      await _voiceAssistant.speak(result);
       AccessibilityUtils.provideFeedback(context: context);
-
     } catch (e) {
-      await _voiceAssistant.speak('camera.error'.tr());
+      if (mounted) {
+        await _voiceAssistant.speakWithLanguage(
+          'camera.error'.tr(),
+          _langCode,
+          vibrate: false,
+        );
+      }
     }
 
-    setState(() => _isProcessing = false);
+    if (mounted) {
+      setState(() => _isProcessing = false);
+    }
   }
 
   Widget _buildCameraPreview() {
@@ -111,7 +199,6 @@ class _CameraRecognitionScreenState
         _cameraController!.value.isInitialized) {
       return CameraPreview(_cameraController!);
     }
-
     return const Center(child: CircularProgressIndicator());
   }
 
@@ -124,9 +211,16 @@ class _CameraRecognitionScreenState
   @override
   Widget build(BuildContext context) {
     final backgroundColor =
-    AccessibilityUtils.getBackgroundColor(context);
+        AccessibilityUtils.getBackgroundColor(context);
     final contrastColor =
-    AccessibilityUtils.getContrastColor(context);
+        AccessibilityUtils.getContrastColor(context);
+
+    final modeLabels = {
+      'currency': 'camera.currency'.tr(),
+      'color': 'camera.color'.tr(),
+      'object': 'camera.object'.tr(),
+      'clothing': 'camera.clothing'.tr(),
+    };
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -134,7 +228,7 @@ class _CameraRecognitionScreenState
         title: Text(
           'features.camera_recognition'.tr(),
           style: TextStyle(
-            fontSize: 24,
+            fontSize: 22,
             fontWeight: FontWeight.bold,
             color: contrastColor,
           ),
@@ -143,24 +237,23 @@ class _CameraRecognitionScreenState
       ),
       body: Column(
         children: [
-          const SizedBox(height: 16),
-
-          // MODE BUTTONS
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _modeButton('currency', 'Currency'),
-              _modeButton('color', 'Color'),
-              _modeButton('object', 'Object'),
-            ],
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _modeButton(context, 'currency', modeLabels['currency']!, contrastColor),
+                _modeButton(context, 'color', modeLabels['color']!, contrastColor),
+                _modeButton(context, 'object', modeLabels['object']!, contrastColor),
+                _modeButton(context, 'clothing', modeLabels['clothing']!, contrastColor),
+              ],
+            ),
           ),
-
-          const SizedBox(height: 16),
-
-          // CAMERA VIEW
+          const SizedBox(height: 12),
           Expanded(
             child: Container(
-              margin: const EdgeInsets.all(16),
+              margin: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: contrastColor, width: 4),
@@ -170,30 +263,35 @@ class _CameraRecognitionScreenState
                 child: _isInitialized
                     ? _buildCameraPreview()
                     : const Center(
-                  child: CircularProgressIndicator(),
-                ),
+                        child: CircularProgressIndicator(),
+                      ),
               ),
             ),
           ),
-
-          const SizedBox(height: 16),
-
-          // CAPTURE BUTTON
+          const SizedBox(height: 12),
           Padding(
-            padding: const EdgeInsets.all(24),
-            child: ElevatedButton.icon(
-              onPressed: _captureAndRecognize,
-              icon: const Icon(Icons.camera_alt),
-              label: const Text(
-                "Capture",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+            child: Semantics(
+              label: 'camera.capture'.tr(),
+              button: true,
+              child: SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton.icon(
+                  onPressed: _isProcessing ? null : _captureAndRecognize,
+                  icon: const Icon(Icons.camera_alt, size: 28),
+                  label: Text(
+                    'camera.capture'.tr(),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2196F3),
+                    foregroundColor: Colors.white,
+                  ),
                 ),
-              ),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 60),
-                backgroundColor: const Color(0xFF2196F3),
               ),
             ),
           ),
@@ -202,20 +300,48 @@ class _CameraRecognitionScreenState
     );
   }
 
-  Widget _modeButton(String mode, String label) {
+  Widget _modeButton(
+    BuildContext context,
+    String mode,
+    String label,
+    Color contrastColor,
+  ) {
     final isActive = _recognitionMode == mode;
 
-    return ElevatedButton(
-      onPressed: () {
-        setState(() {
-          _recognitionMode = mode;
-        });
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor:
-        isActive ? const Color(0xFF2196F3) : Colors.grey,
+    return Semantics(
+      label: label,
+      button: true,
+      child: Expanded(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: ElevatedButton(
+            onPressed: () async {
+              setState(() => _recognitionMode = mode);
+              final modeLabel = label;
+              final msg = 'camera.mode_changed'.tr(args: [modeLabel]);
+              if (msg.isNotEmpty) {
+                await _voiceAssistant.speakWithLanguage(
+                  msg,
+                  _langCode,
+                  vibrate: false,
+                );
+              }
+              AccessibilityUtils.provideFeedback(context: context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor:
+                  isActive ? const Color(0xFF2196F3) : Colors.grey.shade600,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+            ),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(label),
+            ),
+          ),
+        ),
       ),
-      child: Text(label),
     );
   }
 }

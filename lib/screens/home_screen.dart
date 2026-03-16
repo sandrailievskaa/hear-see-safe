@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
@@ -9,10 +10,12 @@ import 'package:hear_and_see_safe/screens/number_games_screen.dart';
 import 'package:hear_and_see_safe/screens/camera_recognition_screen.dart';
 import 'package:hear_and_see_safe/screens/spatial_orientation_screen.dart';
 import 'package:hear_and_see_safe/screens/sound_identification_screen.dart';
-import 'package:hear_and_see_safe/screens/braille_learning_screen.dart';
 import 'package:hear_and_see_safe/screens/cyber_safety_screen.dart';
 import 'package:hear_and_see_safe/screens/sound_memory_screen.dart';
 import 'package:hear_and_see_safe/screens/voice_pong_screen.dart';
+import 'package:hear_and_see_safe/screens/melody_memory_screen.dart';
+import 'package:hear_and_see_safe/screens/rhythm_tap_screen.dart';
+import 'package:hear_and_see_safe/screens/story_choices_screen.dart';
 import 'package:hear_and_see_safe/screens/settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -42,7 +45,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _announceHomeScreen() async {
     await Future.delayed(const Duration(milliseconds: 500));
-    await _voiceAssistant.speak('home.welcome'.tr());
+    if (!mounted) return;
+    final langCode = context.locale.languageCode;
+    await _voiceAssistant.speakWithLanguage('home.welcome'.tr(), langCode, vibrate: false);
   }
 
   void _navigateToScreen(Widget screen, String announcement) {
@@ -155,18 +160,6 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 16),
               _buildFeatureCard(
                 context,
-                icon: Icons.touch_app,
-                title: 'features.braille_learning'.tr(),
-                description: 'features.braille_learning_desc'.tr(),
-                color: Colors.indigo,
-                onTap: () => _navigateToScreen(
-                  const BrailleLearningScreen(),
-                  'features.braille_learning'.tr(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildFeatureCard(
-                context,
                 icon: Icons.security,
                 title: 'features.cyber_safety'.tr(),
                 description: 'features.cyber_safety_desc'.tr(),
@@ -200,6 +193,42 @@ class _HomeScreenState extends State<HomeScreen> {
                   'features.voice_pong'.tr(),
                 ),
               ),
+              const SizedBox(height: 16),
+              _buildFeatureCard(
+                context,
+                icon: Icons.music_note,
+                title: 'features.melody_memory'.tr(),
+                description: 'features.melody_memory_desc'.tr(),
+                color: const Color(0xFF9C27B0),
+                onTap: () => _navigateToScreen(
+                  const MelodyMemoryScreen(),
+                  'features.melody_memory'.tr(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildFeatureCard(
+                context,
+                icon: Icons.graphic_eq,
+                title: 'features.rhythm_tap'.tr(),
+                description: 'features.rhythm_tap_desc'.tr(),
+                color: const Color(0xFFE91E63),
+                onTap: () => _navigateToScreen(
+                  const RhythmTapScreen(),
+                  'features.rhythm_tap'.tr(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildFeatureCard(
+                context,
+                icon: Icons.menu_book,
+                title: 'features.story_choices'.tr(),
+                description: 'features.story_choices_desc'.tr(),
+                color: const Color(0xFF009688),
+                onTap: () => _navigateToScreen(
+                  const StoryChoicesScreen(),
+                  'features.story_choices'.tr(),
+                ),
+              ),
             ],
           ),
         ),
@@ -218,18 +247,22 @@ class _HomeScreenState extends State<HomeScreen> {
     final buttonSize = AccessibilityUtils.getButtonSize(context);
     final contrastColor = AccessibilityUtils.getContrastColor(context);
 
-    return Card(
-      elevation: 8,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(
-          color: contrastColor,
-          width: 3,
+    final hint = 'features.tap_to_open'.tr().isNotEmpty ? 'features.tap_to_open'.tr() : 'Tap to open';
+    return Semantics(
+      label: '$title. $description. $hint',
+      button: true,
+      child: Card(
+        elevation: 8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: contrastColor,
+            width: 3,
+          ),
         ),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
         child: Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
@@ -287,6 +320,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 }
