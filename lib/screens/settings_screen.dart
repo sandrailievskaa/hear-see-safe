@@ -24,6 +24,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Rebuild when locale changes so "Пристапност" / High Contrast / Large Text labels update immediately.
+    final locale = context.locale;
     final backgroundColor = AccessibilityUtils.getBackgroundColor(context);
     final contrastColor = AccessibilityUtils.getContrastColor(context);
 
@@ -44,6 +46,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
+            key: ValueKey(locale.toString()),
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildSectionTitle(context, 'settings.language'.tr()),
@@ -77,10 +80,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildLanguageSelector(BuildContext context) {
+    final cardColor = AccessibilityUtils.getBackgroundColor(context);
     return Consumer<AppStateProvider>(
       builder: (context, appState, _) {
         return Card(
           elevation: 4,
+          color: cardColor,
           child: Column(
             children: [
               _buildLanguageOption(context, 'English', 'en', appState.currentLanguage),
@@ -97,6 +102,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final isSelected = current == code;
     final contrastColor = AccessibilityUtils.getContrastColor(context);
 
+    Locale _localeForCode(String langCode) {
+      switch (langCode) {
+        case 'mk':
+          return const Locale('mk', 'MK');
+        case 'sq':
+          return const Locale('sq', 'AL');
+        case 'en':
+        default:
+          return const Locale('en', 'US');
+      }
+    }
+
     return ListTile(
       title: Text(
         name,
@@ -110,7 +127,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ? const Icon(Icons.check_circle, color: Color(0xFF2196F3), size: 28)
           : null,
       onTap: () async {
-        context.setLocale(Locale(code));
+        // Wait so UI text + translations update immediately.
+        await context.setLocale(_localeForCode(code));
         Provider.of<AppStateProvider>(context, listen: false).setLanguage(code);
         await AccessibilityUtils.provideFeedback(
           context: context,
@@ -122,10 +140,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildAccessibilitySettings(BuildContext context) {
+    final cardColor = AccessibilityUtils.getBackgroundColor(context);
+    final contrastColor = AccessibilityUtils.getContrastColor(context);
     return Consumer<AccessibilityProvider>(
       builder: (context, accessibility, _) {
         return Card(
           elevation: 4,
+          color: cardColor,
           child: Column(
             children: [
               SwitchListTile(
@@ -133,7 +154,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   'settings.high_contrast'.tr(),
                   style: TextStyle(
                     fontSize: 20,
-                    color: AccessibilityUtils.getContrastColor(context),
+                    color: contrastColor,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 value: accessibility.highContrastMode,
@@ -147,7 +169,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   'settings.large_text'.tr(),
                   style: TextStyle(
                     fontSize: 20,
-                    color: AccessibilityUtils.getContrastColor(context),
+                    color: contrastColor,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 value: accessibility.largeTextMode,
@@ -164,10 +187,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildAudioSettings(BuildContext context) {
+    final cardColor = AccessibilityUtils.getBackgroundColor(context);
+    final contrastColor = AccessibilityUtils.getContrastColor(context);
     return Consumer<AppStateProvider>(
       builder: (context, appState, _) {
         return Card(
           elevation: 4,
+          color: cardColor,
           child: Column(
             children: [
               SwitchListTile(
@@ -175,7 +201,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   'settings.voice_assistant'.tr(),
                   style: TextStyle(
                     fontSize: 20,
-                    color: AccessibilityUtils.getContrastColor(context),
+                    color: contrastColor,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 value: appState.isVoiceAssistantEnabled,
@@ -189,7 +216,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   'settings.vibration'.tr(),
                   style: TextStyle(
                     fontSize: 20,
-                    color: AccessibilityUtils.getContrastColor(context),
+                    color: contrastColor,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 value: appState.vibrationEnabled,
@@ -203,7 +231,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   'settings.volume'.tr(),
                   style: TextStyle(
                     fontSize: 20,
-                    color: AccessibilityUtils.getContrastColor(context),
+                    color: contrastColor,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 subtitle: Slider(

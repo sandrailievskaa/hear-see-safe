@@ -26,6 +26,7 @@ class _PictureBookScreenState extends State<PictureBookScreen> {
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   int _currentIndex = 0;
+  bool _isHelpDialogOpen = false;
 
   /// Tap counter for double/triple tap navigation (2 taps = next, 3 taps = prev)
   int _tapCount = 0;
@@ -185,12 +186,55 @@ class _PictureBookScreenState extends State<PictureBookScreen> {
   }
 
   Future<void> _speakIntro() async {
-    if (await VibrationUtils.hasVibrator()) {
-      await VibrationUtils.vibrate(duration: 80);
-    }
     final intro = 'picture_book.intro'.tr();
-    if (intro.isNotEmpty) {
-      await _voiceAssistant.speakWithLanguage(intro, _langCode, vibrate: false);
+    final helpTitle = 'picture_book.help'.tr().isNotEmpty ? 'picture_book.help'.tr() : 'Help';
+
+    // Ensure the tap always has visible feedback (even if voice output isn't available).
+    if (mounted && !_isHelpDialogOpen) {
+      _isHelpDialogOpen = true;
+      if (intro.isNotEmpty) {
+        // Start speaking, but don't block the UI with it.
+        unawaited(_voiceAssistant.speakWithLanguage(intro, _langCode, vibrate: false));
+      }
+
+      try {
+        await showDialog<void>(
+          context: context,
+          builder: (dialogContext) {
+            final content = intro.isNotEmpty ? intro : helpTitle;
+            return AlertDialog(
+              title: Text(
+                helpTitle,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              content: SingleChildScrollView(
+                child: Text(
+                  content,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              actions: [
+                Center(
+                  child: TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    child: const Text('OK'),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      } finally {
+        if (mounted) _isHelpDialogOpen = false;
+      }
+    } else {
+      // If dialog is already open, just try speaking again.
+      if (intro.isNotEmpty) {
+        try {
+          await _voiceAssistant.speakWithLanguage(intro, _langCode, vibrate: false);
+        } catch (_) {}
+      }
     }
   }
 
@@ -391,6 +435,8 @@ class _PictureBookScreenState extends State<PictureBookScreen> {
                               (w * 0.048).clamp(16.0, 20.0);
                           final learnSize =
                               (w * 0.042).clamp(14.0, 18.0);
+                          final hintSize =
+                              (w * 0.032).clamp(12.0, 16.0);
 
                           return SingleChildScrollView(
                             padding: const EdgeInsets.symmetric(
@@ -434,6 +480,19 @@ class _PictureBookScreenState extends State<PictureBookScreen> {
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
+                                const SizedBox(height: 12),
+                                if (hintNav.isNotEmpty)
+                                  Text(
+                                    hintNav,
+                                    style: TextStyle(
+                                      fontSize: hintSize,
+                                      color: contrastColor.withOpacity(0.75),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                               ],
                             ),
                           );

@@ -3,6 +3,7 @@ import 'package:flutter/semantics.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
+import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
 import 'package:hear_and_see_safe/utils/vibration_utils.dart';
 
 class CyberSafetyScreen extends StatefulWidget {
@@ -145,8 +146,8 @@ class _CyberSafetyScreenState extends State<CyberSafetyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const backgroundColor = Colors.white;
-    const contrastColor = Colors.black;
+    final backgroundColor = AccessibilityUtils.getBackgroundColor(context);
+    final contrastColor = AccessibilityUtils.getContrastColor(context);
 
     if (_currentQuestion >= _questions.length) {
       return Scaffold(
@@ -154,7 +155,7 @@ class _CyberSafetyScreenState extends State<CyberSafetyScreen> {
         appBar: AppBar(
           title: Text(
             'features.cyber_safety'.tr(),
-            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black),
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: contrastColor),
           ),
           backgroundColor: const Color(0xFF2196F3),
         ),
@@ -166,6 +167,7 @@ class _CyberSafetyScreenState extends State<CyberSafetyScreen> {
                 Text(
                   'cyber.results_title'.tr(),
                   textAlign: TextAlign.center,
+                  style: TextStyle(color: contrastColor),
                 ),
                 const SizedBox(height: 20),
                 Text(
@@ -174,6 +176,7 @@ class _CyberSafetyScreenState extends State<CyberSafetyScreen> {
                     _questions.length.toString(),
                   ]),
                   textAlign: TextAlign.center,
+                  style: TextStyle(color: contrastColor),
                 ),
                 const SizedBox(height: 40),
                 SizedBox(
@@ -186,6 +189,10 @@ class _CyberSafetyScreenState extends State<CyberSafetyScreen> {
                       'cyber.restart'.tr(),
                       textAlign: TextAlign.center,
                       softWrap: true, // текстот може да продолжи во втор ред
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2196F3),
+                      foregroundColor: contrastColor,
                     ),
                   ),
                 ),
@@ -203,7 +210,7 @@ class _CyberSafetyScreenState extends State<CyberSafetyScreen> {
       appBar: AppBar(
         title: Text(
           'features.cyber_safety'.tr(),
-          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black),
+          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: contrastColor),
         ),
         backgroundColor: const Color(0xFF2196F3),
       ),
@@ -229,6 +236,7 @@ class _CyberSafetyScreenState extends State<CyberSafetyScreen> {
                     Text(
                       question.question,
                       textAlign: TextAlign.center,
+                      style: TextStyle(color: contrastColor),
                     ),
                     const SizedBox(height: 20),
                     ...question.options.asMap().entries.map((entry) {
@@ -257,6 +265,8 @@ class _CyberSafetyScreenState extends State<CyberSafetyScreen> {
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: buttonColor,
+                                // Always use white text for readability on colored buttons.
+                                foregroundColor: Colors.white,
                               ),
                               onPressed: () => _selectAnswer(index),
                               child: Text(

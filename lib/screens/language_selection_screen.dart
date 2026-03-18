@@ -152,7 +152,8 @@ class LanguageSelectionScreen extends StatelessWidget {
     required VoiceAssistantService voiceAssistant,
   }) {
     Future<void> select() async {
-      context.setLocale(locale);
+      // Wait so subsequent UI/audio reflects the new locale.
+      await context.setLocale(locale);
       Provider.of<AppStateProvider>(context, listen: false).setLanguage(langCode);
 
       await AccessibilityUtils.provideFeedback(

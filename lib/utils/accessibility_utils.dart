@@ -8,32 +8,33 @@ import 'package:hear_and_see_safe/utils/vibration_utils.dart';
 
 class AccessibilityUtils {
   static double getTextScale(BuildContext context) {
-    final accessibilityProvider = Provider.of<AccessibilityProvider>(context, listen: false);
+    final accessibilityProvider = Provider.of<AccessibilityProvider>(context);
     return accessibilityProvider.textScale;
   }
 
   static Color getContrastColor(BuildContext context, {Color? lightColor, Color? darkColor}) {
-    final accessibilityProvider = Provider.of<AccessibilityProvider>(context, listen: false);
+    final accessibilityProvider = Provider.of<AccessibilityProvider>(context);
     final isHighContrast = accessibilityProvider.highContrastMode;
 
     if (isHighContrast) {
-      return darkColor ?? const Color(0xFF000000);
+      // High contrast mode: strong separation between background (black) and text (white).
+      return lightColor ?? const Color(0xFFFFFFFF);
     }
-    return lightColor ?? const Color(0xFF212121);
+    return darkColor ?? const Color(0xFF212121);
   }
 
   static Color getBackgroundColor(BuildContext context) {
-    final accessibilityProvider = Provider.of<AccessibilityProvider>(context, listen: false);
+    final accessibilityProvider = Provider.of<AccessibilityProvider>(context);
     final isHighContrast = accessibilityProvider.highContrastMode;
 
     if (isHighContrast) {
-      return const Color(0xFFFFFFFF);
+      return const Color(0xFF000000);
     }
     return const Color(0xFFF5F5F5);
   }
 
   static double getButtonSize(BuildContext context) {
-    final accessibilityProvider = Provider.of<AccessibilityProvider>(context, listen: false);
+    final accessibilityProvider = Provider.of<AccessibilityProvider>(context);
     return accessibilityProvider.buttonSize;
   }
 
