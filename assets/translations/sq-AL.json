@@ -5,6 +5,12 @@
   "home": {
     "welcome": "Mirë se vini në Dëgjo dhe Shiko i Sigurt. Zgjidhni një funksion për të filluar."
   },
+  "voice": {
+    "speak_command": "Thuaj një komandë. Për shembull: libër fotosh, lojëra me numra, cilësimet.",
+    "not_recognized": "Komanda nuk u njoh. Provoni përsëri.",
+    "listening": "Duke dëgjuar...",
+    "tap_to_speak": "Komandë me zë"
+  },
   "features": {
     "picture_book": "Mëso dhe Dëgjo",
     "picture_book_desc": "Libër me foto multimedial për të dobët të shikimit: imazhe të mëdha, zëra, vibrim dhe fakte mësimore deri në 15 vjeç.",
@@ -113,6 +119,7 @@
     "addition": "Mbledhje dhe zbritje",
     "objects": "Numëro objektet",
     "how_many_shapes": "Sa forma shihni? Numëroji dhe vendosni numrin.",
+    "objects_announce": "Ka {0} {1}. Vendosni numrin.",
     "shapes_circle": "rreth",
     "shapes_square": "katrorë",
     "shapes_star": "yll",

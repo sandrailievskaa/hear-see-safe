@@ -5,6 +5,12 @@
   "home": {
     "welcome": "Welcome to Hear and See Safe. Choose a feature to begin."
   },
+  "voice": {
+    "speak_command": "Say a command. For example: picture book, number games, settings.",
+    "not_recognized": "Command not recognized. Try again.",
+    "listening": "Listening...",
+    "tap_to_speak": "Voice command"
+  },
   "features": {
     "picture_book": "Learn & Listen",
     "picture_book_desc": "Multimedia picture book for visually impaired: large images, sounds, vibration and learning facts for ages up to 15",
@@ -113,6 +119,7 @@
     "addition": "Addition and subtraction",
     "objects": "Count objects",
     "how_many_shapes": "How many shapes do you see? Count them and enter the number.",
+    "objects_announce": "There are {0} {1}. Enter the number.",
     "shapes_circle": "circles",
     "shapes_square": "squares",
     "shapes_star": "stars",

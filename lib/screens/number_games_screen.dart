@@ -111,6 +111,14 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
         _langCode,
         vibrate: false,
       );
+      // За слепи деца: гласовно најавување колку облици има, за да можат да внесат број.
+      final shapeLabel = 'number_games.shapes_$_shapeType'.tr();
+      await Future.delayed(const Duration(milliseconds: 600));
+      await _voiceAssistant.speakWithLanguage(
+        'number_games.objects_announce'.tr(args: [_shapeCount.toString(), shapeLabel]),
+        _langCode,
+        vibrate: false,
+      );
     }
   }
 
@@ -358,19 +366,24 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
       ));
       if (placed < count) rows.add(const SizedBox(height: 16));
     }
-    return Center(
-      child: SingleChildScrollView(
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          padding: const EdgeInsets.symmetric(vertical: 24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: contrastColor, width: 4),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: rows,
+    final shapeLabel = 'number_games.shapes_$_shapeType'.tr();
+    final announceLabel = 'number_games.objects_announce'.tr(args: [_shapeCount.toString(), shapeLabel]);
+    return Semantics(
+      label: announceLabel,
+      child: Center(
+        child: SingleChildScrollView(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: contrastColor, width: 4),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: rows,
+            ),
           ),
         ),
       ),

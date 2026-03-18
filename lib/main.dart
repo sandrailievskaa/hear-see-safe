@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:hear_and_see_safe/providers/app_state_provider.dart';
 import 'package:hear_and_see_safe/providers/accessibility_provider.dart';
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
+import 'package:hear_and_see_safe/services/speech_command_service.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
 import 'package:hear_and_see_safe/screens/language_selection_screen.dart';
 
@@ -46,6 +47,7 @@ class HearAndSeeSafeApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider(create: (_) => VoiceAssistantService()),
+        Provider(create: (_) => SpeechCommandService()),
         ChangeNotifierProxyProvider<VoiceAssistantService, AppStateProvider>(
           create: (_) => AppStateProvider(),
           update: (context, voiceAssistant, previous) {

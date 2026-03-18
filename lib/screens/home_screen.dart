@@ -3,6 +3,7 @@ import 'package:flutter/semantics.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
+import 'package:hear_and_see_safe/services/speech_command_service.dart';
 import 'package:hear_and_see_safe/providers/app_state_provider.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
 import 'package:hear_and_see_safe/screens/picture_book_screen.dart';
@@ -27,14 +28,92 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late VoiceAssistantService _voiceAssistant;
+  late SpeechCommandService _speechCommand;
+  bool _isListening = false;
 
   @override
   void initState() {
     super.initState();
     _voiceAssistant = Provider.of<VoiceAssistantService>(context, listen: false);
+    _speechCommand = Provider.of<SpeechCommandService>(context, listen: false);
     _voiceAssistant.initialize();
     _updateVoiceAssistantSettings();
     _announceHomeScreen();
+  }
+
+  /// Мапира препознат говор на екран (многујазично).
+  void _handleVoiceCommand(String? text) {
+    if (text == null || text.isEmpty) return;
+    final t = text.toLowerCase().trim();
+
+    // Клучни зборови по модул (en, mk, sq)
+    if (_match(t, ['picture', 'book', 'learn', 'listen', 'учи', 'слушај', 'сликовница', 'mëso', 'dëgjo'])) {
+      _navigateToScreen(const PictureBookScreen(), 'features.picture_book'.tr());
+      return;
+    }
+    if (_match(t, ['number', 'broevi', 'броеви', 'numra', 'calculate'])) {
+      _navigateToScreen(const NumberGamesScreen(), 'features.number_games'.tr());
+      return;
+    }
+    if (_match(t, ['camera', 'камера', 'recognize', 'распознавање', 'kamerë'])) {
+      _navigateToScreen(const CameraRecognitionScreen(), 'features.camera_recognition'.tr());
+      return;
+    }
+    if (_match(t, ['spatial', 'orientation', 'просторна', 'ориентација', 'hapësirë'])) {
+      _navigateToScreen(const SpatialOrientationScreen(), 'features.spatial_orientation'.tr());
+      return;
+    }
+    if (_match(t, ['sound', 'identification', 'звук', 'идентификација', 'tingull'])) {
+      _navigateToScreen(const SoundIdentificationScreen(), 'features.sound_identification'.tr());
+      return;
+    }
+    if (_match(t, ['cyber', 'safety', 'кибер', 'безбедност', 'siguria'])) {
+      _navigateToScreen(const CyberSafetyScreen(), 'features.cyber_safety'.tr());
+      return;
+    }
+    if (_match(t, ['sound memory', 'меморија звуци', 'memory', 'kujtesë'])) {
+      _navigateToScreen(const SoundMemoryScreen(), 'features.sound_memory'.tr());
+      return;
+    }
+    if (_match(t, ['pong', 'понг', 'voice pong'])) {
+      _navigateToScreen(const VoicePongScreen(), 'features.voice_pong'.tr());
+      return;
+    }
+    if (_match(t, ['melody', 'мелодија', 'simon'])) {
+      _navigateToScreen(const MelodyMemoryScreen(), 'features.melody_memory'.tr());
+      return;
+    }
+    if (_match(t, ['rhythm', 'ритми', 'tap', 'ритам'])) {
+      _navigateToScreen(const RhythmTapScreen(), 'features.rhythm_tap'.tr());
+      return;
+    }
+    if (_match(t, ['story', 'приказна', 'choice', 'histori'])) {
+      _navigateToScreen(const StoryChoicesScreen(), 'features.story_choices'.tr());
+      return;
+    }
+    if (_match(t, ['settings', 'поставки', 'postavki', 'cilësimet'])) {
+      _navigateToScreen(const SettingsScreen(), 'settings.opening'.tr());
+      return;
+    }
+
+    _voiceAssistant.speakWithLanguage('voice.not_recognized'.tr(), context.locale.languageCode, vibrate: false);
+  }
+
+  bool _match(String text, List<String> keywords) {
+    return keywords.any((k) => text.contains(k.toLowerCase()));
+  }
+
+  Future<void> _startVoiceCommand() async {
+    if (_isListening) return;
+    setState(() => _isListening = true);
+    final langCode = context.locale.languageCode;
+    await _voiceAssistant.speakWithLanguage('voice.speak_command'.tr(), langCode, vibrate: false);
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
+    final result = await _speechCommand.listen(locale: langCode);
+    if (!mounted) return;
+    setState(() => _isListening = false);
+    _handleVoiceCommand(result);
   }
 
   void _updateVoiceAssistantSettings() {
@@ -91,6 +170,12 @@ class _HomeScreenState extends State<HomeScreen> {
             tooltip: 'settings.title'.tr(),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _isListening ? null : _startVoiceCommand,
+        icon: Icon(_isListening ? Icons.mic : Icons.mic_none),
+        label: Text(_isListening ? 'voice.listening'.tr() : 'voice.tap_to_speak'.tr()),
+        backgroundColor: _isListening ? Colors.grey : const Color(0xFF2196F3),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
