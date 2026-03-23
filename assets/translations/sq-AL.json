@@ -2,16 +2,42 @@
   "app": {
     "title": "Dëgjo dhe Shiko i Sigurt"
   },
+  "language": {
+    "welcome": "Mirë se vini! Zgjidhni një gjuhë për të vazhduar.",
+    "choose": "Zgjidhni gjuhën",
+    "voice_title": "Asistenti me Zë",
+    "voice_ready": "Gati për të ndihmuar.",
+    "voice_assistant_ready": "Asistenti me zë është gati."
+  },
   "home": {
     "welcome": "Mirë se vini në Dëgjo dhe Shiko i Sigurt. Zgjidhni një funksion për të filluar."
   },
   "voice": {
-    "speak_command": "Thuaj një komandë. Për shembull: libër fotosh, lojëra me numra, cilësimet.",
+    "speak_command": "Thuaj një komandë. Për shembull: Braille, libër fotosh, lojëra me numra, cilësimet.",
     "not_recognized": "Komanda nuk u njoh. Provoni përsëri.",
     "listening": "Duke dëgjuar...",
     "tap_to_speak": "Komandë me zë"
   },
+  "braille": {
+    "title": "Alfabeti Braille",
+    "intro": "Mësimi i Braille për prindër. Prekni çdo shkronjë ose numër për ta dëgjuar. Mësoni pikat për të mbështetur fëmijën tuaj të verbër.",
+    "for_parents": "Për prindërit: Mësoni Braille për të komunikuar me fëmijën tuaj të verbër. Prekni çdo qelizë për të dëgjuar shkronjën ose numrin.",
+    "letters": "Shkronjat A–Z",
+    "numbers": "Numrat 0–9",
+    "letter": "Shkronja {0}",
+    "number": "Numri {0}",
+    "cell": "Braille {0}",
+    "letter_A": "Shkronja A", "letter_B": "Shkronja B", "letter_C": "Shkronja C", "letter_D": "Shkronja D", "letter_E": "Shkronja E",
+    "letter_F": "Shkronja F", "letter_G": "Shkronja G", "letter_H": "Shkronja H", "letter_I": "Shkronja I", "letter_J": "Shkronja J",
+    "letter_K": "Shkronja K", "letter_L": "Shkronja L", "letter_M": "Shkronja M", "letter_N": "Shkronja N", "letter_O": "Shkronja O",
+    "letter_P": "Shkronja P", "letter_Q": "Shkronja Q", "letter_R": "Shkronja R", "letter_S": "Shkronja S", "letter_T": "Shkronja T",
+    "letter_U": "Shkronja U", "letter_V": "Shkronja V", "letter_W": "Shkronja W", "letter_X": "Shkronja X", "letter_Y": "Shkronja Y", "letter_Z": "Shkronja Z",
+    "num_0": "zero", "num_1": "një", "num_2": "dy", "num_3": "tre", "num_4": "katër",
+    "num_5": "pesë", "num_6": "gjashtë", "num_7": "shtatë", "num_8": "tetë", "num_9": "nëntë"
+  },
   "features": {
+    "braille": "Alfabeti Braille",
+    "braille_desc": "Mësoni Braille për prindërit e fëmijëve të verbër",
     "picture_book": "Mëso dhe Dëgjo",
     "picture_book_desc": "Libër me foto multimedial për të dobët të shikimit: imazhe të mëdha, zëra, vibrim dhe fakte mësimore deri në 15 vjeç.",
     "number_games": "Lojëra me Numra",

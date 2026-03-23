@@ -74,27 +74,55 @@ class VoiceAssistantServiceMobileImpl {
     _isSpeaking = false;
   }
 
+  static const List<String> _mkLocales = ['mk-MK', 'mk_MK', 'mk'];
+  static const List<String> _sqLocales = ['sq-AL', 'sq_AL', 'sq'];
+
+  Future<bool> _trySetLanguage(String languageCode) async {
+    if (_flutterTts == null || kIsWeb) return false;
+    List<String> localesToTry;
+    switch (languageCode) {
+      case 'mk':
+        localesToTry = _mkLocales;
+        break;
+      case 'sq':
+        localesToTry = _sqLocales;
+        break;
+      default:
+        localesToTry = ['en-US', 'en_US', 'en'];
+        break;
+    }
+    try {
+      final available = await _flutterTts!.getLanguages;
+      if (available != null && available.isNotEmpty) {
+        final langPrefix = languageCode == 'mk' ? 'mk' : (languageCode == 'sq' ? 'sq' : 'en');
+        for (final a in available) {
+          if (a.toString().toLowerCase().startsWith(langPrefix)) {
+            try {
+              await _flutterTts!.setLanguage(a.toString());
+              return true;
+            } catch (_) {}
+          }
+        }
+      }
+    } catch (_) {}
+    for (final loc in localesToTry) {
+      try {
+        await _flutterTts!.setLanguage(loc);
+        return true;
+      } catch (_) {}
+    }
+    return false;
+  }
+
   Future<void> speakWithLanguage(String text, String languageCode, {bool vibrate = true}) async {
     if (!_isInitialized) await initialize();
 
     if (_flutterTts != null && !kIsWeb) {
-      try {
-        String ttsLanguage = "en-US";
-        switch (languageCode) {
-          case 'mk':
-            ttsLanguage = "mk-MK";
-            break;
-          case 'sq':
-            ttsLanguage = "sq-AL";
-            break;
-          case 'en':
-          default:
-            ttsLanguage = "en-US";
-            break;
-        }
-        await _flutterTts!.setLanguage(ttsLanguage);
-      } catch (e) {
-        await _flutterTts!.setLanguage("en-US");
+      final ok = await _trySetLanguage(languageCode);
+      if (!ok) {
+        try {
+          await _flutterTts!.setLanguage("en-US");
+        } catch (_) {}
       }
     }
 

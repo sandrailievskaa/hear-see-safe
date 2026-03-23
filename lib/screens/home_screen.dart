@@ -6,6 +6,7 @@ import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
 import 'package:hear_and_see_safe/services/speech_command_service.dart';
 import 'package:hear_and_see_safe/providers/app_state_provider.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
+import 'package:hear_and_see_safe/screens/braille_learning_screen.dart';
 import 'package:hear_and_see_safe/screens/picture_book_screen.dart';
 import 'package:hear_and_see_safe/screens/number_games_screen.dart';
 import 'package:hear_and_see_safe/screens/camera_recognition_screen.dart';
@@ -47,6 +48,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final t = text.toLowerCase().trim();
 
     // Клучни зборови по модул (en, mk, sq)
+    if (_match(t, ['braille', 'брај', 'braj', 'brajova', 'azbuka', 'родители', 'prindër'])) {
+      _navigateToScreen(const BrailleLearningScreen(), 'features.braille'.tr());
+      return;
+    }
     if (_match(t, ['picture', 'book', 'learn', 'listen', 'учи', 'слушај', 'сликовница', 'mëso', 'dëgjo'])) {
       _navigateToScreen(const PictureBookScreen(), 'features.picture_book'.tr());
       return;
@@ -183,6 +188,18 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              _buildFeatureCard(
+                context,
+                icon: Icons.grid_view,
+                title: 'features.braille'.tr(),
+                description: 'features.braille_desc'.tr(),
+                color: const Color(0xFF1565C0),
+                onTap: () => _navigateToScreen(
+                  const BrailleLearningScreen(),
+                  'features.braille'.tr(),
+                ),
+              ),
+              const SizedBox(height: 16),
               _buildFeatureCard(
                 context,
                 icon: Icons.book,

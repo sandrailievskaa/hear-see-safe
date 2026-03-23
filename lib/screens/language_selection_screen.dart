@@ -110,12 +110,12 @@ class LanguageSelectionScreen extends StatelessWidget {
             child: Icon(Icons.mic, color: Colors.white),
           ),
           const SizedBox(width: 16),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Voice Assistant", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                Text("Ready to help"),
+                Text('language.voice_title'.tr(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                Text('language.voice_ready'.tr()),
               ],
             ),
           ),
@@ -124,7 +124,7 @@ class LanguageSelectionScreen extends StatelessWidget {
             onTap: () async {
               await AccessibilityUtils.provideFeedback(
                 context: context,
-                audioFeedback: "Voice assistant is ready.",
+                audioFeedback: 'language.voice_assistant_ready'.tr(),
                 voiceAssistant: voiceAssistant,
               );
             },

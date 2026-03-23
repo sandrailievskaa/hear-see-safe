@@ -2,16 +2,42 @@
   "app": {
     "title": "Hear & See Safe"
   },
+  "language": {
+    "welcome": "Welcome! Choose a language to continue.",
+    "choose": "Choose language",
+    "voice_title": "Voice Assistant",
+    "voice_ready": "Ready to help.",
+    "voice_assistant_ready": "Voice assistant is ready."
+  },
   "home": {
     "welcome": "Welcome to Hear and See Safe. Choose a feature to begin."
   },
   "voice": {
-    "speak_command": "Say a command. For example: picture book, number games, settings.",
+    "speak_command": "Say a command. For example: Braille, picture book, number games, settings.",
     "not_recognized": "Command not recognized. Try again.",
     "listening": "Listening...",
     "tap_to_speak": "Voice command"
   },
+  "braille": {
+    "title": "Braille Alphabet",
+    "intro": "Braille learning for parents. Tap each letter or number to hear it. Learn the dots to support your blind child.",
+    "for_parents": "For parents: Learn Braille to communicate with your blind child. Tap any cell to hear the letter or number.",
+    "letters": "Letters A–Z",
+    "numbers": "Numbers 0–9",
+    "letter": "Letter {0}",
+    "number": "Number {0}",
+    "cell": "Braille {0}",
+    "letter_A": "Letter A", "letter_B": "Letter B", "letter_C": "Letter C", "letter_D": "Letter D", "letter_E": "Letter E",
+    "letter_F": "Letter F", "letter_G": "Letter G", "letter_H": "Letter H", "letter_I": "Letter I", "letter_J": "Letter J",
+    "letter_K": "Letter K", "letter_L": "Letter L", "letter_M": "Letter M", "letter_N": "Letter N", "letter_O": "Letter O",
+    "letter_P": "Letter P", "letter_Q": "Letter Q", "letter_R": "Letter R", "letter_S": "Letter S", "letter_T": "Letter T",
+    "letter_U": "Letter U", "letter_V": "Letter V", "letter_W": "Letter W", "letter_X": "Letter X", "letter_Y": "Letter Y", "letter_Z": "Letter Z",
+    "num_0": "zero", "num_1": "one", "num_2": "two", "num_3": "three", "num_4": "four",
+    "num_5": "five", "num_6": "six", "num_7": "seven", "num_8": "eight", "num_9": "nine"
+  },
   "features": {
+    "braille": "Braille Alphabet",
+    "braille_desc": "Learn Braille for parents of blind children",
     "picture_book": "Learn & Listen",
     "picture_book_desc": "Multimedia picture book for visually impaired: large images, sounds, vibration and learning facts for ages up to 15",
     "number_games": "Number Games",

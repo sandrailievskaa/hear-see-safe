@@ -61,27 +61,63 @@ class VoiceAssistantService {
     _isSpeaking = false;
   }
 
+  /// Македонски и албански: пробува повеќе формати бидејќи уреди/прелистувачи користат различни.
+  static const List<String> _mkLocales = ['mk-MK', 'mk_MK', 'mk'];
+  static const List<String> _sqLocales = ['sq-AL', 'sq_AL', 'sq'];
+
+  Future<bool> _trySetLanguage(String languageCode) async {
+    if (_flutterTts == null) return false;
+
+    List<String> localesToTry;
+    switch (languageCode) {
+      case 'mk':
+        localesToTry = _mkLocales;
+        break;
+      case 'sq':
+        localesToTry = _sqLocales;
+        break;
+      case 'en':
+      default:
+        localesToTry = ['en-US', 'en_US', 'en'];
+        break;
+    }
+
+    // На Android: ако getLanguages работи, најди match за mk/sq
+    try {
+      final available = await _flutterTts!.getLanguages;
+      if (available != null && available.isNotEmpty) {
+        final langPrefix = languageCode == 'mk' ? 'mk' : (languageCode == 'sq' ? 'sq' : 'en');
+        for (final a in available) {
+          final s = a.toString().toLowerCase();
+          if (s.startsWith(langPrefix)) {
+            try {
+              await _flutterTts!.setLanguage(a.toString());
+              return true;
+            } catch (_) {}
+          }
+        }
+      }
+    } catch (_) {}
+
+    // Fallback: пробувај по ред
+    for (final loc in localesToTry) {
+      try {
+        await _flutterTts!.setLanguage(loc);
+        return true;
+      } catch (_) {
+        continue;
+      }
+    }
+    return false;
+  }
+
   Future<void> speakWithLanguage(String text, String languageCode, {bool vibrate = true}) async {
     if (!_isInitialized) await initialize();
     if (!_voiceAssistantEnabled || text.isEmpty) return;
 
     if (_flutterTts != null) {
-      try {
-        String ttsLang = "en-US";
-        switch (languageCode) {
-          case 'mk':
-            ttsLang = "mk-MK";
-            break;
-          case 'sq':
-            ttsLang = "sq-AL";
-            break;
-          case 'en':
-          default:
-            ttsLang = "en-US";
-            break;
-        }
-        await _flutterTts!.setLanguage(ttsLang);
-      } catch (e) {
+      final ok = await _trySetLanguage(languageCode);
+      if (!ok) {
         try {
           await _flutterTts!.setLanguage("en-US");
         } catch (_) {}

@@ -57,29 +57,53 @@ class VoiceAssistantService {
     }
   }
 
-  Future<void> speakWithLanguage(String text, String languageCode, {bool vibrate = true}) async {
-    if (!_isInitialized) {
-      await initialize();
-    }
+  static const List<String> _mkLocales = ['mk-MK', 'mk_MK', 'mk'];
+  static const List<String> _sqLocales = ['sq-AL', 'sq_AL', 'sq'];
 
-    String ttsLanguage = "en-US";
+  Future<bool> _trySetLanguage(String languageCode) async {
+    List<String> localesToTry;
     switch (languageCode) {
       case 'mk':
-        ttsLanguage = "mk-MK";
+        localesToTry = _mkLocales;
         break;
       case 'sq':
-        ttsLanguage = "sq-AL";
+        localesToTry = _sqLocales;
         break;
-      case 'en':
       default:
-        ttsLanguage = "en-US";
+        localesToTry = ['en-US', 'en_US', 'en'];
         break;
     }
-
     try {
-      await _flutterTts.setLanguage(ttsLanguage);
-    } catch (e) {
-      await _flutterTts.setLanguage("en-US");
+      final available = await _flutterTts.getLanguages;
+      if (available != null && available.isNotEmpty) {
+        final langPrefix = languageCode == 'mk' ? 'mk' : (languageCode == 'sq' ? 'sq' : 'en');
+        for (final a in available) {
+          if (a.toString().toLowerCase().startsWith(langPrefix)) {
+            try {
+              await _flutterTts.setLanguage(a.toString());
+              return true;
+            } catch (_) {}
+          }
+        }
+      }
+    } catch (_) {}
+    for (final loc in localesToTry) {
+      try {
+        await _flutterTts.setLanguage(loc);
+        return true;
+      } catch (_) {}
+    }
+    return false;
+  }
+
+  Future<void> speakWithLanguage(String text, String languageCode, {bool vibrate = true}) async {
+    if (!_isInitialized) await initialize();
+
+    final ok = await _trySetLanguage(languageCode);
+    if (!ok) {
+      try {
+        await _flutterTts.setLanguage("en-US");
+      } catch (_) {}
     }
 
     await speak(text, vibrate: vibrate);

@@ -34,6 +34,8 @@ void main() async {
       ],
       path: 'assets/translations',
       fallbackLocale: const Locale('en', 'US'),
+      saveLocale: true,
+      useFallbackTranslations: true,
       child: const HearAndSeeSafeApp(),
     ),
   );
