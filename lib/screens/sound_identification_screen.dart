@@ -151,7 +151,7 @@ class _SoundIdentificationScreenState extends State<SoundIdentificationScreen> {
             color: contrastColor,
           ),
         ),
-        backgroundColor: const Color(0xFF2196F3),
+        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
       ),
       body: SafeArea(
         child: Column(
@@ -161,14 +161,14 @@ class _SoundIdentificationScreenState extends State<SoundIdentificationScreen> {
               width: 140,
               height: 140,
               decoration: BoxDecoration(
-                color: const Color(0xFF2196F3),
+                color: AccessibilityUtils.getPrimaryButtonBackground(context),
                 shape: BoxShape.circle,
                 border: Border.all(color: contrastColor, width: 4),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.hearing,
                 size: 70,
-                color: Colors.white,
+                color: AccessibilityUtils.getPrimaryButtonForeground(context),
               ),
             ),
             const SizedBox(height: 16),
@@ -202,11 +202,15 @@ class _SoundIdentificationScreenState extends State<SoundIdentificationScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                IconButton(
-                  onPressed: _waitingForAnswer ? _replaySound : null,
-                  icon: const Icon(Icons.replay, size: 32),
-                  color: const Color(0xFF2196F3),
-                  tooltip: 'sound.replay'.tr(),
+                Semantics(
+                  label: 'sound.replay'.tr(),
+                  button: true,
+                  child: IconButton(
+                    onPressed: _waitingForAnswer ? _replaySound : null,
+                    icon: const Icon(Icons.replay, size: 32),
+                    color: AccessibilityUtils.getAccentColor(context),
+                    tooltip: 'sound.replay'.tr(),
+                  ),
                 ),
                 const SizedBox(width: 24),
                 Text(
@@ -244,8 +248,8 @@ class _SoundIdentificationScreenState extends State<SoundIdentificationScreen> {
         child: ElevatedButton(
           onPressed: _waitingForAnswer ? () => _onChoose(soundId) : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF2196F3),
-            foregroundColor: Colors.white,
+            backgroundColor: AccessibilityUtils.getPrimaryButtonBackground(context),
+            foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
             textStyle: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,

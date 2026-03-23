@@ -40,7 +40,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             color: contrastColor,
           ),
         ),
-        backgroundColor: const Color(0xFF2196F3),
+        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -80,12 +80,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildLanguageSelector(BuildContext context) {
-    final cardColor = AccessibilityUtils.getBackgroundColor(context);
+    final cardColor = AccessibilityUtils.getCardBackgroundColor(context);
+    final contrastColor = AccessibilityUtils.getContrastColor(context);
     return Consumer<AppStateProvider>(
       builder: (context, appState, _) {
         return Card(
-          elevation: 4,
+          elevation: AccessibilityUtils.isHighContrast(context) ? 0 : 4,
           color: cardColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: AccessibilityUtils.getCardBorder(context, fallbackColor: contrastColor),
+          ),
           child: Column(
             children: [
               _buildLanguageOption(context, 'English', 'en', appState.currentLanguage),
@@ -124,7 +129,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
       trailing: isSelected
-          ? const Icon(Icons.check_circle, color: Color(0xFF2196F3), size: 28)
+          ? Icon(Icons.check_circle, color: AccessibilityUtils.getAccentColor(context), size: 28)
           : null,
       onTap: () async {
         // Wait so UI text + translations update immediately.
@@ -140,13 +145,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildAccessibilitySettings(BuildContext context) {
-    final cardColor = AccessibilityUtils.getBackgroundColor(context);
+    final cardColor = AccessibilityUtils.getCardBackgroundColor(context);
     final contrastColor = AccessibilityUtils.getContrastColor(context);
     return Consumer<AccessibilityProvider>(
       builder: (context, accessibility, _) {
         return Card(
-          elevation: 4,
+          elevation: AccessibilityUtils.isHighContrast(context) ? 0 : 4,
           color: cardColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: AccessibilityUtils.getCardBorder(context, fallbackColor: contrastColor),
+          ),
           child: Column(
             children: [
               SwitchListTile(
@@ -187,13 +196,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildAudioSettings(BuildContext context) {
-    final cardColor = AccessibilityUtils.getBackgroundColor(context);
+    final cardColor = AccessibilityUtils.getCardBackgroundColor(context);
     final contrastColor = AccessibilityUtils.getContrastColor(context);
     return Consumer<AppStateProvider>(
       builder: (context, appState, _) {
         return Card(
-          elevation: 4,
+          elevation: AccessibilityUtils.isHighContrast(context) ? 0 : 4,
           color: cardColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: AccessibilityUtils.getCardBorder(context, fallbackColor: contrastColor),
+          ),
           child: Column(
             children: [
               SwitchListTile(

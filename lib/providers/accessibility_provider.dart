@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AccessibilityProvider extends ChangeNotifier {
-  bool _highContrastMode = true;
+  bool _highContrastMode = false;
   // Default: "normal" sizes. Users can enable Large Text mode in Settings.
   bool _largeTextMode = false;
   double _textScale = 1.0;

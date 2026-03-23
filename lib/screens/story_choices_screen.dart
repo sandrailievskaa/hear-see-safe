@@ -148,7 +148,7 @@ class _StoryChoicesScreenState extends State<StoryChoicesScreen> {
           'features.story_choices'.tr(),
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: contrastColor),
         ),
-        backgroundColor: const Color(0xFF009688),
+        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
       ),
       body: SafeArea(
         child: Column(
@@ -182,7 +182,8 @@ class _StoryChoicesScreenState extends State<StoryChoicesScreen> {
                             onPressed: () => _choose(1),
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 20),
-                              backgroundColor: const Color(0xFF009688),
+                              backgroundColor: AccessibilityUtils.getPrimaryButtonBackground(context),
+                              foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
                             ),
                           ),
                         ),
@@ -203,7 +204,8 @@ class _StoryChoicesScreenState extends State<StoryChoicesScreen> {
                             onPressed: () => _choose(2),
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 20),
-                              backgroundColor: const Color(0xFF00796B),
+                              backgroundColor: AccessibilityUtils.getPrimaryButtonBackground(context),
+                              foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
                             ),
                           ),
                         ),
@@ -223,14 +225,19 @@ class _StoryChoicesScreenState extends State<StoryChoicesScreen> {
                         style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: contrastColor),
                       ),
                       const SizedBox(height: 32),
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.replay),
-                        label: Text('story.play_again'.tr()),
-                        onPressed: _restart,
+                      Semantics(
+                        label: 'story.play_again'.tr(),
+                        button: true,
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.replay),
+                          label: Text('story.play_again'.tr()),
+                          onPressed: _restart,
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                          backgroundColor: const Color(0xFF009688),
+                          backgroundColor: AccessibilityUtils.getPrimaryButtonBackground(context),
+                          foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
                         ),
+                      ),
                       ),
                     ],
                   ),

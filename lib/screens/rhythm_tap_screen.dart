@@ -96,6 +96,11 @@ class _RhythmTapScreenState extends State<RhythmTapScreen> {
     await _playBeat();
 
     setState(() => _userTaps++);
+    await _voiceAssistant.speakWithLanguage(
+      'rhythm.tap_count'.tr(args: [_userTaps.toString(), _beatsToPlay.toString()]),
+      _langCode,
+      vibrate: false,
+    );
 
     if (_userTaps >= _beatsToPlay) {
       setState(() => _tapPhase = false);
@@ -142,7 +147,7 @@ class _RhythmTapScreenState extends State<RhythmTapScreen> {
           'features.rhythm_tap'.tr(),
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: contrastColor),
         ),
-        backgroundColor: const Color(0xFFE91E63),
+        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
       ),
       body: SafeArea(
         child: Column(
@@ -171,7 +176,7 @@ class _RhythmTapScreenState extends State<RhythmTapScreen> {
                       decoration: BoxDecoration(
                         color: _tapPhase
                             ? const Color(0xFFE91E63).withOpacity(0.3)
-                            : Colors.grey.withOpacity(0.2),
+                            : (AccessibilityUtils.isHighContrast(context) ? const Color(0xFF333333) : Colors.grey.withOpacity(0.2)),
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
                           color: contrastColor,

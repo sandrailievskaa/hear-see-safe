@@ -58,73 +58,105 @@ class HearAndSeeSafeApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(create: (_) => AccessibilityProvider()),
       ],
-      child: MaterialApp(
-        title: 'Hear & See Safe',
-        debugShowCheckedModeBanner: false,
-        localizationsDelegates: context.localizationDelegates,
-        supportedLocales: context.supportedLocales,
-        locale: context.locale,
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          primaryColor: const Color(0xFF2196F3),
-          scaffoldBackgroundColor: const Color(0xFFF5F5F5),
-          fontFamily: 'Roboto',
-          textTheme: const TextTheme(
-            displayLarge: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF212121),
-            ),
-            displayMedium: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF212121),
-            ),
-            displaySmall: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF212121),
-            ),
-            headlineMedium: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF212121),
-            ),
-            bodyLarge: TextStyle(
-              fontSize: 18,
-              color: Color(0xFF424242),
-            ),
-            bodyMedium: TextStyle(
-              fontSize: 16,
-              color: Color(0xFF424242),
-            ),
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2196F3),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              textStyle: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+      child: Consumer<AccessibilityProvider>(
+        builder: (context, accessibility, _) {
+          final isHighContrast = accessibility.highContrastMode;
+          final scaffoldBg = isHighContrast ? const Color(0xFF000000) : const Color(0xFFF5F5F5);
+          final textColor = isHighContrast ? const Color(0xFFFFFFFF) : const Color(0xFF212121);
+          final bodyColor = isHighContrast ? const Color(0xFFFFFFFF) : const Color(0xFF424242);
+          final primaryBg = isHighContrast ? const Color(0xFF1A1A1A) : const Color(0xFF2196F3);
+          final primaryFg = isHighContrast ? const Color(0xFFFFFFFF) : Colors.white;
+
+          return MaterialApp(
+            title: 'Hear & See Safe',
+            debugShowCheckedModeBanner: false,
+            localizationsDelegates: context.localizationDelegates,
+            supportedLocales: context.supportedLocales,
+            locale: context.locale,
+            theme: ThemeData(
+              primarySwatch: Colors.blue,
+              primaryColor: primaryBg,
+              scaffoldBackgroundColor: scaffoldBg,
+              appBarTheme: AppBarTheme(
+                backgroundColor: primaryBg,
+                foregroundColor: primaryFg,
+                iconTheme: IconThemeData(color: primaryFg),
+                titleTextStyle: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: primaryFg,
+                ),
               ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+              fontFamily: 'Roboto',
+              textTheme: TextTheme(
+                displayLarge: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                ),
+                displayMedium: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                ),
+                displaySmall: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                ),
+                headlineMedium: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: textColor,
+                ),
+                bodyLarge: TextStyle(
+                  fontSize: 18,
+                  color: bodyColor,
+                ),
+                bodyMedium: TextStyle(
+                  fontSize: 16,
+                  color: bodyColor,
+                ),
               ),
-              elevation: 4,
-              minimumSize: const Size(200, 60),
-            ),
-          ),
-        ),
-        home: const LanguageSelectionScreen(),
-        builder: (context, child) {
-          return MediaQuery(
-            data: MediaQuery.of(context).copyWith(
-              textScaler: TextScaler.linear(
-                AccessibilityUtils.getTextScale(context),
+              sliderTheme: SliderThemeData(
+                activeTrackColor: isHighContrast ? const Color(0xFFFFFFFF) : const Color(0xFF2196F3),
+                inactiveTrackColor: isHighContrast ? const Color(0xFF666666) : const Color(0xFFBDBDBD),
+                thumbColor: isHighContrast ? const Color(0xFFFFFF00) : const Color(0xFF2196F3),
+                overlayColor: (isHighContrast ? const Color(0xFFFFFF00) : const Color(0xFF2196F3)).withValues(alpha: 0.3),
+              ),
+              elevatedButtonTheme: ElevatedButtonThemeData(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryBg,
+                  foregroundColor: primaryFg,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  textStyle: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  shape: isHighContrast
+                      ? RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: const BorderSide(color: Color(0xFFFFFFFF), width: 2),
+                        )
+                      : RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                  elevation: isHighContrast ? 0 : 4,
+                  minimumSize: const Size(200, 60),
+                ),
               ),
             ),
-            child: child!,
+            home: const LanguageSelectionScreen(),
+            builder: (context, child) {
+              return MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  textScaler: TextScaler.linear(
+                    AccessibilityUtils.getTextScale(context),
+                  ),
+                ),
+                child: child!,
+              );
+            },
           );
         },
       ),

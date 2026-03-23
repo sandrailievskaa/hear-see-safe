@@ -181,7 +181,7 @@ class _VoicePongScreenState extends State<VoicePongScreen> {
             color: contrastColor,
           ),
         ),
-        backgroundColor: const Color(0xFF2196F3),
+        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
       ),
       body: SafeArea(
         child: Column(
@@ -204,7 +204,7 @@ class _VoicePongScreenState extends State<VoicePongScreen> {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: _misses >= 2 ? Colors.red : contrastColor,
+                      color: _misses >= 2 ? const Color(0xFFFF4444) : contrastColor,
                     ),
                   ),
                 ],
@@ -221,7 +221,7 @@ class _VoicePongScreenState extends State<VoicePongScreen> {
                     width: double.infinity,
                     margin: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
-                      color: Colors.black87,
+                      color: AccessibilityUtils.isHighContrast(context) ? const Color(0xFF1A1A1A) : Colors.black87,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: contrastColor, width: 4),
                     ),
@@ -234,7 +234,7 @@ class _VoicePongScreenState extends State<VoicePongScreen> {
                             width: 16,
                             height: 80,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF2196F3),
+                              color: AccessibilityUtils.getAccentColor(context),
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
@@ -245,8 +245,8 @@ class _VoicePongScreenState extends State<VoicePongScreen> {
                           child: Container(
                             width: 24,
                             height: 24,
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
+                            decoration: BoxDecoration(
+                              color: AccessibilityUtils.getContrastColor(context),
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -262,46 +262,54 @@ class _VoicePongScreenState extends State<VoicePongScreen> {
               child: Row(
                 children: [
                   Expanded(
-                    child: SizedBox(
-                      height: 56,
-                      child: ElevatedButton.icon(
-                        onPressed: _isPlaying ? _stopGame : _startGame,
-                        icon: Icon(_isPlaying ? Icons.stop : Icons.play_arrow),
-                        label: Text(
-                          _isPlaying ? 'pong.stop'.tr() : 'pong.start'.tr(),
+                    child: Semantics(
+                      label: _isPlaying ? 'pong.stop'.tr() : 'pong.start'.tr(),
+                      button: true,
+                      child: SizedBox(
+                        height: 56,
+                        child: ElevatedButton.icon(
+                          onPressed: _isPlaying ? _stopGame : _startGame,
+                          icon: Icon(_isPlaying ? Icons.stop : Icons.play_arrow),
+                          label: Text(
+                            _isPlaying ? 'pong.stop'.tr() : 'pong.start'.tr(),
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: _isPlaying ? Colors.red.shade700 : const Color(0xFF4CAF50),
-                          foregroundColor: Colors.white,
+                          backgroundColor: _isPlaying ? const Color(0xFFE53935) : const Color(0xFF4CAF50),
+                          foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
                         ),
                       ),
+                    ),
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: SizedBox(
-                      height: 56,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          if (_isPlaying) _stopGame();
-                          _startGame();
-                          AccessibilityUtils.provideFeedback(context: context);
-                        },
-                        icon: const Icon(Icons.refresh),
-                        label: Text('pong.restart'.tr()),
+                    child: Semantics(
+                      label: 'pong.restart'.tr(),
+                      button: true,
+                      child: SizedBox(
+                        height: 56,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            if (_isPlaying) _stopGame();
+                            _startGame();
+                            AccessibilityUtils.provideFeedback(context: context);
+                          },
+                          icon: const Icon(Icons.refresh),
+                          label: Text('pong.restart'.tr()),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2196F3),
-                          foregroundColor: Colors.white,
+                          backgroundColor: AccessibilityUtils.getPrimaryButtonBackground(context),
+                          foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
                           textStyle: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
+                    ),
                     ),
                   ),
                 ],

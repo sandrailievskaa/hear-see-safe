@@ -183,7 +183,7 @@ class _MelodyMemoryScreenState extends State<MelodyMemoryScreen> {
           'features.melody_memory'.tr(),
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: contrastColor),
         ),
-        backgroundColor: const Color(0xFF9C27B0),
+        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
       ),
       body: SafeArea(
         child: Column(
@@ -229,10 +229,10 @@ class _MelodyMemoryScreenState extends State<MelodyMemoryScreen> {
                             child: Text(
                               labels[index],
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: AccessibilityUtils.getPrimaryButtonForeground(context),
                               ),
                             ),
                           ),

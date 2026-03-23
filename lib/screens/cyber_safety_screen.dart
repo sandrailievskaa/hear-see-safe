@@ -157,7 +157,7 @@ class _CyberSafetyScreenState extends State<CyberSafetyScreen> {
             'features.cyber_safety'.tr(),
             style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: contrastColor),
           ),
-          backgroundColor: const Color(0xFF2196F3),
+          backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
         ),
         body: SafeArea(
           child: Center(
@@ -191,7 +191,7 @@ class _CyberSafetyScreenState extends State<CyberSafetyScreen> {
                       softWrap: true, // текстот може да продолжи во втор ред
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2196F3),
+                      backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
                       foregroundColor: contrastColor,
                     ),
                   ),
@@ -212,7 +212,7 @@ class _CyberSafetyScreenState extends State<CyberSafetyScreen> {
           'features.cyber_safety'.tr(),
           style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: contrastColor),
         ),
-        backgroundColor: const Color(0xFF2196F3),
+        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
       ),
       body: SafeArea(
         child: Column(
@@ -266,7 +266,7 @@ class _CyberSafetyScreenState extends State<CyberSafetyScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: buttonColor,
                                 // Always use white text for readability on colored buttons.
-                                foregroundColor: Colors.white,
+                                foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
                               ),
                               onPressed: () => _selectAnswer(index),
                               child: Text(

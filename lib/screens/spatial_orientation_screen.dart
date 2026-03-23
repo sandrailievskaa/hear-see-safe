@@ -158,7 +158,7 @@ class _SpatialOrientationScreenState extends State<SpatialOrientationScreen> {
               color: contrastColor,
             ),
           ),
-          backgroundColor: const Color(0xFF2196F3),
+          backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
         ),
         body: SafeArea(
           child: Column(
@@ -185,7 +185,7 @@ class _SpatialOrientationScreenState extends State<SpatialOrientationScreen> {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Colors.green.shade700,
+                      color: AccessibilityUtils.isHighContrast(context) ? const Color(0xFF4CAF50) : Colors.green.shade700,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -196,7 +196,7 @@ class _SpatialOrientationScreenState extends State<SpatialOrientationScreen> {
                     child: Icon(
                       Icons.explore,
                       size: 120,
-                      color: contrastColor.withOpacity(0.8),
+                      color: AccessibilityUtils.getSecondaryTextColor(context),
                     ),
                   ),
                 ),
@@ -258,8 +258,8 @@ class _SpatialOrientationScreenState extends State<SpatialOrientationScreen> {
                         label: Text('spatial.repeat'.tr()),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          backgroundColor: Colors.grey.shade700,
-                          foregroundColor: Colors.white,
+                          backgroundColor: AccessibilityUtils.getDisabledColor(context),
+                          foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
                         ),
                       ),
                     ),
@@ -271,8 +271,8 @@ class _SpatialOrientationScreenState extends State<SpatialOrientationScreen> {
                         label: Text('spatial.restart'.tr()),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          backgroundColor: const Color(0xFF2196F3),
-                          foregroundColor: Colors.white,
+                          backgroundColor: AccessibilityUtils.getPrimaryButtonBackground(context),
+                          foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
                         ),
                       ),
                     ),
@@ -302,8 +302,8 @@ class _SpatialOrientationScreenState extends State<SpatialOrientationScreen> {
         child: ElevatedButton(
           onPressed: _finished ? null : () => _onAction(action),
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF2196F3),
-            foregroundColor: Colors.white,
+            backgroundColor: AccessibilityUtils.getPrimaryButtonBackground(context),
+            foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
             padding: EdgeInsets.zero,
           ),
           child: Icon(icon, size: 32),

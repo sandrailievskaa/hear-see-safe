@@ -176,7 +176,7 @@ class _SoundMemoryScreenState extends State<SoundMemoryScreen> {
             color: contrastColor,
           ),
         ),
-        backgroundColor: const Color(0xFF2196F3),
+        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
       ),
       body: SafeArea(
         child: Column(
@@ -227,10 +227,10 @@ class _SoundMemoryScreenState extends State<SoundMemoryScreen> {
                         child: Container(
                           decoration: BoxDecoration(
                             color: isMatched
-                                ? Colors.green.shade600
+                                ? (AccessibilityUtils.isHighContrast(context) ? const Color(0xFF4CAF50) : Colors.green.shade600)
                                 : isRevealed
-                                    ? const Color(0xFF2196F3)
-                                    : Colors.grey.shade600,
+                                    ? AccessibilityUtils.getPrimaryButtonBackground(context)
+                                    : AccessibilityUtils.getDisabledColor(context),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: contrastColor,
@@ -239,15 +239,15 @@ class _SoundMemoryScreenState extends State<SoundMemoryScreen> {
                           ),
                           child: Center(
                             child: isRevealed || isMatched
-                                ? const Icon(
+                                ? Icon(
                                     Icons.volume_up,
                                     size: 44,
-                                    color: Colors.white,
+                                    color: AccessibilityUtils.getPrimaryButtonForeground(context),
                                   )
-                                : const Icon(
+                                : Icon(
                                     Icons.help_outline,
                                     size: 44,
-                                    color: Colors.white,
+                                    color: AccessibilityUtils.getPrimaryButtonForeground(context),
                                   ),
                           ),
                         ),
@@ -259,20 +259,23 @@ class _SoundMemoryScreenState extends State<SoundMemoryScreen> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-              child: SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    _initGame();
-                    _announceStart();
-                    AccessibilityUtils.provideFeedback(context: context);
-                  },
-                  icon: const Icon(Icons.refresh),
-                  label: Text('sound_memory.restart'.tr()),
+              child: Semantics(
+                label: 'sound_memory.restart'.tr(),
+                button: true,
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      _initGame();
+                      _announceStart();
+                      AccessibilityUtils.provideFeedback(context: context);
+                    },
+                    icon: const Icon(Icons.refresh),
+                    label: Text('sound_memory.restart'.tr()),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2196F3),
-                    foregroundColor: Colors.white,
+                    backgroundColor: AccessibilityUtils.getPrimaryButtonBackground(context),
+                    foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
                     textStyle: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -280,6 +283,7 @@ class _SoundMemoryScreenState extends State<SoundMemoryScreen> {
                   ),
                 ),
               ),
+            ),
             ),
           ],
         ),

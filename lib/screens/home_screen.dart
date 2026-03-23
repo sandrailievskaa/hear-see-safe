@@ -157,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
             color: contrastColor,
           ),
         ),
-        backgroundColor: const Color(0xFF2196F3),
+        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings, size: 32),
@@ -175,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onPressed: _isListening ? null : _startVoiceCommand,
         icon: Icon(_isListening ? Icons.mic : Icons.mic_none),
         label: Text(_isListening ? 'voice.listening'.tr() : 'voice.tap_to_speak'.tr()),
-        backgroundColor: _isListening ? Colors.grey : const Color(0xFF2196F3),
+        backgroundColor: _isListening ? AccessibilityUtils.getDisabledColor(context) : AccessibilityUtils.getAppBarBackgroundColor(context),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -336,14 +336,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return Semantics(
       label: '$title. $description. $hint',
       button: true,
-      child: Card(
-        elevation: 8,
+        child: Card(
+        elevation: AccessibilityUtils.isHighContrast(context) ? 0 : 8,
+        color: AccessibilityUtils.getCardBackgroundColor(context),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: BorderSide(
-            color: contrastColor,
-            width: 3,
-          ),
+          side: AccessibilityUtils.getCardBorder(context, fallbackColor: contrastColor),
         ),
         child: InkWell(
           onTap: onTap,
@@ -369,31 +367,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Icon(
                   icon,
                   size: 40 * buttonSize,
-                  color: Colors.white,
+                  color: AccessibilityUtils.getPrimaryButtonForeground(context),
                 ),
               ),
               const SizedBox(width: 20),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 22 * buttonSize,
-                        fontWeight: FontWeight.bold,
-                        color: contrastColor,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      description,
-                      style: TextStyle(
-                        fontSize: 16 * buttonSize,
-                        color: contrastColor.withOpacity(0.7),
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 22 * buttonSize,
+                    fontWeight: FontWeight.bold,
+                    color: contrastColor,
+                  ),
                 ),
               ),
               Icon(

@@ -113,6 +113,7 @@
     "choose_answer": "Zgjidhni përgjigjen ose vendoseni me tastierë.",
     "correct": "Saktë! Shumë mirë!",
     "incorrect": "Nuk është saktë. Provojeni përsëri!",
+    "correct_answer": "Përgjigja e saktë është {0}.",
     "score": "Rezultati: {0} pikë",
     "score_announce": "Keni {0} pikë.",
     "counting": "Cili është numri?",

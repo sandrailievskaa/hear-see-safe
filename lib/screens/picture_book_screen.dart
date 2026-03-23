@@ -374,13 +374,13 @@ class _PictureBookScreenState extends State<PictureBookScreen> {
             color: contrastColor,
           ),
         ),
-        backgroundColor: const Color(0xFF2196F3),
+        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
         actions: [
           Semantics(
             label: helpLabel.isNotEmpty ? helpLabel : 'Help',
             button: true,
             child: IconButton(
-              icon: const Icon(Icons.help_outline, color: Colors.white),
+              icon: Icon(Icons.help_outline, color: AccessibilityUtils.getPrimaryButtonForeground(context)),
               onPressed: _speakIntro,
             ),
           ),
@@ -411,7 +411,7 @@ class _PictureBookScreenState extends State<PictureBookScreen> {
                     width: double.infinity,
                     margin: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AccessibilityUtils.getPrimaryButtonForeground(context),
                       borderRadius: BorderRadius.circular(26),
                       border: Border.all(color: contrastColor, width: 3),
                       boxShadow: [

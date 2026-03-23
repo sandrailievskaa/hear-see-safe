@@ -161,6 +161,11 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
         _langCode,
         vibrate: false,
       );
+      await _voiceAssistant.speakWithLanguage(
+        'number_games.correct_answer'.tr(args: [correct.toString()]),
+        _langCode,
+        vibrate: false,
+      );
       setState(() => _inputController.clear());
     }
   }
@@ -205,7 +210,7 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
             color: contrastColor,
           ),
         ),
-        backgroundColor: const Color(0xFF2196F3),
+        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
       ),
       body: SafeArea(
         child: Column(
@@ -257,7 +262,7 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
       label: label,
       button: true,
       child: Material(
-        color: isActive ? const Color(0xFF2196F3) : Colors.grey.shade600,
+        color: isActive ? AccessibilityUtils.getAccentColor(context) : AccessibilityUtils.getDisabledColor(context),
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
           onTap: () => _switchGame(game),
@@ -267,8 +272,8 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
             child: Center(
               child: Text(
                 label,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: AccessibilityUtils.getPrimaryButtonForeground(context),
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
                 ),
@@ -300,7 +305,7 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
         margin: const EdgeInsets.symmetric(horizontal: 24),
         padding: const EdgeInsets.symmetric(vertical: 32),
         decoration: BoxDecoration(
-          color: backgroundColor,
+          color: AccessibilityUtils.getCardBackgroundColor(context),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: contrastColor, width: 4),
         ),
@@ -328,7 +333,7 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
         margin: const EdgeInsets.symmetric(horizontal: 24),
         padding: const EdgeInsets.symmetric(vertical: 32),
         decoration: BoxDecoration(
-          color: backgroundColor,
+          color: AccessibilityUtils.getCardBackgroundColor(context),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: contrastColor, width: 4),
         ),
@@ -345,8 +350,6 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
       ),
     );
   }
-
-  static Color get backgroundColor => const Color(0xFFFFFFFF);
 
   Widget _buildCountObjectsView(Color bgColor, Color contrastColor) {
     const double shapeSize = 56;
@@ -376,7 +379,7 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
             margin: const EdgeInsets.symmetric(horizontal: 16),
             padding: const EdgeInsets.symmetric(vertical: 24),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AccessibilityUtils.getCardBackgroundColor(context),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(color: contrastColor, width: 4),
             ),
@@ -447,8 +450,8 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
         child: ElevatedButton(
           onPressed: () => _appendDigit(digit),
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF2196F3),
-            foregroundColor: Colors.white,
+            backgroundColor: AccessibilityUtils.getPrimaryButtonBackground(context),
+            foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
             textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           child: Text(digit),
@@ -486,7 +489,7 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
                     borderSide: BorderSide(color: contrastColor, width: 3),
                   ),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: AccessibilityUtils.getCardBackgroundColor(context),
                 ),
               ),
             ),
@@ -501,8 +504,8 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
               child: ElevatedButton(
                 onPressed: _clearInput,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey.shade700,
-                  foregroundColor: Colors.white,
+                  backgroundColor: AccessibilityUtils.getDisabledColor(context),
+                  foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
                 ),
                 child: Text('number_games.clear'.tr()),
               ),
@@ -519,7 +522,7 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
                 onPressed: _submitAnswer,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4CAF50),
-                  foregroundColor: Colors.white,
+                  foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
                   textStyle: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 child: Text('number_games.submit'.tr()),

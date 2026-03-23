@@ -233,7 +233,7 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
             color: contrastColor,
           ),
         ),
-        backgroundColor: const Color(0xFF2196F3),
+        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
       ),
       body: Column(
         children: [
@@ -288,8 +288,8 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2196F3),
-                    foregroundColor: Colors.white,
+                    backgroundColor: AccessibilityUtils.getPrimaryButtonBackground(context),
+                    foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
                   ),
                 ),
               ),
@@ -330,8 +330,8 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor:
-                  isActive ? const Color(0xFF2196F3) : Colors.grey.shade600,
-              foregroundColor: Colors.white,
+                  isActive ? AccessibilityUtils.getAccentColor(context) : AccessibilityUtils.getDisabledColor(context),
+              foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
               padding: const EdgeInsets.symmetric(vertical: 10),
               textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
             ),

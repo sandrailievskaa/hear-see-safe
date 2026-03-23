@@ -113,6 +113,7 @@
     "choose_answer": "Choose your answer or enter with the keyboard.",
     "correct": "Correct! Well done!",
     "incorrect": "Not correct. Try again!",
+    "correct_answer": "The correct answer is {0}.",
     "score": "Score: {0} points",
     "score_announce": "You have {0} points.",
     "counting": "What is the number?",
