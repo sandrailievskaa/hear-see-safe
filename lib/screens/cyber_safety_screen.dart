@@ -181,14 +181,14 @@ class _CyberSafetyScreenState extends State<CyberSafetyScreen> {
                 const SizedBox(height: 40),
                 SizedBox(
                   width: double.infinity,
-                  height: 70, // зголемена висина за wrap текст
+                  height: 70,
                   child: ElevatedButton.icon(
                     onPressed: _restart,
                     icon: const Icon(Icons.refresh),
                     label: Text(
                       'cyber.restart'.tr(),
                       textAlign: TextAlign.center,
-                      softWrap: true, // текстот може да продолжи во втор ред
+                      softWrap: true,
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
@@ -265,14 +265,16 @@ class _CyberSafetyScreenState extends State<CyberSafetyScreen> {
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: buttonColor,
-                                // Always use white text for readability on colored buttons.
                                 foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
                               ),
                               onPressed: () => _selectAnswer(index),
-                              child: Text(
-                                option,
-                                textAlign: TextAlign.center,
-                                softWrap: true,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  option,
+                                  textAlign: TextAlign.center,
+                                  softWrap: true,
+                                ),
                               ),
                             ),
                           ),

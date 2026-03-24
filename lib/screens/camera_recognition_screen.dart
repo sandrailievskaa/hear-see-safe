@@ -10,8 +10,6 @@ import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
 import 'package:hear_and_see_safe/utils/vibration_utils.dart';
 
-/// Распознавање на камера за слепи: пари (македонски денари), бои, предмети, облека со совет за комбинирање.
-/// Целата повратна информација е преку говор (TTS) на избраниот јазик.
 class CameraRecognitionScreen extends StatefulWidget {
   const CameraRecognitionScreen({super.key});
 
@@ -143,7 +141,6 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
       }
 
       await _cameraController!.takePicture();
-
       await Future.delayed(const Duration(milliseconds: 800));
 
       if (!mounted) return;
@@ -151,22 +148,20 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
       String resultKey;
       if (_recognitionMode == 'currency') {
         resultKey = _currencyKeys[_random.nextInt(_currencyKeys.length)];
-        final msg = resultKey.tr();
-        await _voiceAssistant.speakWithLanguage(msg, _langCode, vibrate: false);
       } else if (_recognitionMode == 'color') {
         resultKey = _colorKeys[_random.nextInt(_colorKeys.length)];
-        final msg = resultKey.tr();
-        await _voiceAssistant.speakWithLanguage(msg, _langCode, vibrate: false);
       } else if (_recognitionMode == 'object') {
         resultKey = _objectKeys[_random.nextInt(_objectKeys.length)];
-        final msg = resultKey.tr();
-        await _voiceAssistant.speakWithLanguage(msg, _langCode, vibrate: false);
       } else {
         resultKey = _clothingKeys[_random.nextInt(_clothingKeys.length)];
-        final msg = resultKey.tr();
-        await _voiceAssistant.speakWithLanguage(msg, _langCode, vibrate: false);
+      }
+
+      final msg = resultKey.tr();
+      await _voiceAssistant.speakWithLanguage(msg, _langCode, vibrate: false);
+
+      if (_recognitionMode == 'clothing') {
         final tipKey =
-            _combinationTipKeys[_random.nextInt(_combinationTipKeys.length)];
+        _combinationTipKeys[_random.nextInt(_combinationTipKeys.length)];
         final tip = tipKey.tr();
         if (tip.isNotEmpty) {
           await Future.delayed(const Duration(milliseconds: 400));
@@ -211,9 +206,9 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
   @override
   Widget build(BuildContext context) {
     final backgroundColor =
-        AccessibilityUtils.getBackgroundColor(context);
+    AccessibilityUtils.getBackgroundColor(context);
     final contrastColor =
-        AccessibilityUtils.getContrastColor(context);
+    AccessibilityUtils.getContrastColor(context);
 
     final modeLabels = {
       'currency': 'camera.currency'.tr(),
@@ -238,10 +233,11 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
       body: Column(
         children: [
           const SizedBox(height: 12),
+
+          // ✅ КОПЧИЊА ВО ЕДЕН РЕД (FIX)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _modeButton(context, 'currency', modeLabels['currency']!, contrastColor),
                 _modeButton(context, 'color', modeLabels['color']!, contrastColor),
@@ -250,7 +246,9 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
               ],
             ),
           ),
+
           const SizedBox(height: 12),
+
           Expanded(
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -262,36 +260,22 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
                 borderRadius: BorderRadius.circular(16),
                 child: _isInitialized
                     ? _buildCameraPreview()
-                    : const Center(
-                        child: CircularProgressIndicator(),
-                      ),
+                    : const Center(child: CircularProgressIndicator()),
               ),
             ),
           ),
+
           const SizedBox(height: 12),
+
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-            child: Semantics(
-              label: 'camera.capture'.tr(),
-              button: true,
-              child: SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton.icon(
-                  onPressed: _isProcessing ? null : _captureAndRecognize,
-                  icon: const Icon(Icons.camera_alt, size: 28),
-                  label: Text(
-                    'camera.capture'.tr(),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AccessibilityUtils.getPrimaryButtonBackground(context),
-                    foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
-                  ),
-                ),
+            child: SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton.icon(
+                onPressed: _isProcessing ? null : _captureAndRecognize,
+                icon: const Icon(Icons.camera_alt, size: 28),
+                label: Text('camera.capture'.tr()),
               ),
             ),
           ),
@@ -301,44 +285,33 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
   }
 
   Widget _modeButton(
-    BuildContext context,
-    String mode,
-    String label,
-    Color contrastColor,
-  ) {
+      BuildContext context,
+      String mode,
+      String label,
+      Color contrastColor,
+      ) {
     final isActive = _recognitionMode == mode;
 
-    return Semantics(
-      label: label,
-      button: true,
-      child: Expanded(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: ElevatedButton(
-            onPressed: () async {
-              setState(() => _recognitionMode = mode);
-              final modeLabel = label;
-              final msg = 'camera.mode_changed'.tr(args: [modeLabel]);
-              if (msg.isNotEmpty) {
-                await _voiceAssistant.speakWithLanguage(
-                  msg,
-                  _langCode,
-                  vibrate: false,
-                );
-              }
-              AccessibilityUtils.provideFeedback(context: context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  isActive ? AccessibilityUtils.getAccentColor(context) : AccessibilityUtils.getDisabledColor(context),
-              foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 2),
+        child: ElevatedButton(
+          onPressed: () async {
+            setState(() => _recognitionMode = mode);
+          },
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+            textStyle: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
             ),
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(label),
-            ),
+            backgroundColor: isActive
+                ? AccessibilityUtils.getAccentColor(context)
+                : AccessibilityUtils.getDisabledColor(context),
+          ),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(label, textAlign: TextAlign.center),
           ),
         ),
       ),
