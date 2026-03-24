@@ -7,10 +7,6 @@ import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
 import 'package:hear_and_see_safe/utils/vibration_utils.dart';
 
-/// Аудио-визуелни игри со броеви за деца со оштетен вид:
-/// 1) Препознавање на број – цел екран, висок контраст, TTS го изговара, внес преку тастатура/паднастатура, поени.
-/// 2) Операции – TTS ја чита целата задача (на пр. 3+2=?), ученикот внесува одговор.
-/// 3) Броење предмети – приказ на облици/предмети, внес на избројаната количина (за остаток на вид).
 class NumberGamesScreen extends StatefulWidget {
   const NumberGamesScreen({super.key});
 
@@ -27,17 +23,14 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
   int _score = 0;
   int _totalAsked = 0;
 
-  // Recognize mode: number to guess
   int _displayNumber = 0;
 
-  // Operations: a op b = ?
   int _opA = 0, _opB = 0;
   bool _isAddition = true;
   int get _correctOpAnswer => _isAddition ? _opA + _opB : _opA - _opB;
 
-  // Count objects: how many shapes
   int _shapeCount = 0;
-  String _shapeType = 'circle'; // circle, square, star
+  String _shapeType = 'circle';
 
   @override
   void initState() {
@@ -111,7 +104,6 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
         _langCode,
         vibrate: false,
       );
-      // За слепи деца: гласовно најавување колку облици има, за да можат да внесат број.
       final shapeLabel = 'number_games.shapes_$_shapeType'.tr();
       await Future.delayed(const Duration(milliseconds: 600));
       await _voiceAssistant.speakWithLanguage(
@@ -369,10 +361,8 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
       ));
       if (placed < count) rows.add(const SizedBox(height: 16));
     }
-    final shapeLabel = 'number_games.shapes_$_shapeType'.tr();
-    final announceLabel = 'number_games.objects_announce'.tr(args: [_shapeCount.toString(), shapeLabel]);
     return Semantics(
-      label: announceLabel,
+      label: 'number_games.objects_announce'.tr(args: [_shapeCount.toString(), _shapeType]),
       child: Center(
         child: SingleChildScrollView(
           child: Container(
@@ -428,19 +418,19 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
   }
 
   Widget _buildNumberPad(BuildContext context, Color contrastColor) {
-    const digits = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
+    const digits = ['1','2','3','4','5','6','7','8','9','0'];
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: Wrap(
         spacing: 10,
         runSpacing: 10,
         alignment: WrapAlignment.center,
-        children: digits.map((d) => _digitButton(d, contrastColor)).toList(),
+        children: digits.map((d) => _digitButton(d)).toList(),
       ),
     );
   }
 
-  Widget _digitButton(String digit, Color contrastColor) {
+  Widget _digitButton(String digit) {
     return Semantics(
       label: digit,
       button: true,
@@ -451,10 +441,17 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
           onPressed: () => _appendDigit(digit),
           style: ElevatedButton.styleFrom(
             backgroundColor: AccessibilityUtils.getPrimaryButtonBackground(context),
-            foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
+            foregroundColor: Colors.white,
             textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
-          child: Text(digit),
+          child: Text(
+            digit,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
       ),
     );
@@ -506,8 +503,15 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AccessibilityUtils.getDisabledColor(context),
                   foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
+                  textStyle: const TextStyle(
+                    fontSize: 14, // помал текст
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                child: Text('number_games.clear'.tr()),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text('number_games.clear'.tr()),
+                ),
               ),
             ),
           ),
@@ -523,9 +527,15 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4CAF50),
                   foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
-                  textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                  textStyle: const TextStyle(
+                    fontSize: 14, // помал текст
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                child: Text('number_games.submit'.tr()),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text('number_games.submit'.tr()),
+                ),
               ),
             ),
           ),
@@ -547,26 +557,31 @@ class _StarPainter extends CustomPainter {
     final outer = size.width * 0.45;
     final inner = size.width * 0.2;
     final path = Path();
+
     for (int i = 0; i < 10; i++) {
       final r = i.isEven ? outer : inner;
-      final a = (i * 36 - 90) * math.pi / 180;
-      final x = cx + r * math.cos(a);
-      final y = cy + r * math.sin(a);
+      final angle = (i * 36 - 90) * (math.pi / 180); // 36° по точка
+      final x = cx + r * math.cos(angle);
+      final y = cy + r * math.sin(angle);
       if (i == 0) {
         path.moveTo(x, y);
       } else {
         path.lineTo(x, y);
       }
     }
+
     path.close();
-    canvas.drawPath(path, Paint()..color = color.withOpacity(0.3));
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 4,
-    );
+    final paint = Paint()
+      ..color = color.withOpacity(0.5)
+      ..style = PaintingStyle.fill;
+
+    final borderPaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3;
+
+    canvas.drawPath(path, paint);
+    canvas.drawPath(path, borderPaint);
   }
 
   @override
