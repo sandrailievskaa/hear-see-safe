@@ -1,0 +1,76 @@
+import 'package:flutter/foundation.dart';
+
+import '../domain/entities/supported_voice_language.dart';
+import '../domain/entities/transcription_result.dart';
+
+/// Voice/STT language priority and UI language sync.
+///
+/// **Product rule:** Macedonian is always tried first for recognition unless the
+/// user explicitly turns off [prioritizeMacedonianForStt] (advanced setting).
+class LanguageManager extends ChangeNotifier {
+  LanguageManager({
+    this.prioritizeMacedonianForStt = true,
+    String userUiLanguageCode = 'mk',
+  }) : _userUiLanguageCode = userUiLanguageCode;
+
+  /// When true, STT locale order always starts with Macedonian, then English, then Albanian.
+  bool prioritizeMacedonianForStt;
+
+  String _userUiLanguageCode;
+
+  /// Last language detected by cloud STT or the LLM (hint for TTS feedback).
+  SupportedVoiceLanguage? lastDetectedLanguage;
+
+  String get userUiLanguageCode => _userUiLanguageCode;
+
+  void setUserUiLanguageCode(String code) {
+    if (_userUiLanguageCode == code) return;
+    _userUiLanguageCode = code;
+    notifyListeners();
+  }
+
+  void setPrioritizeMacedonianForStt(bool value) {
+    if (prioritizeMacedonianForStt == value) return;
+    prioritizeMacedonianForStt = value;
+    notifyListeners();
+  }
+
+  void applyDetectionHint(TranscriptionResult? result) {
+    if (result?.detectedLanguage != null) {
+      lastDetectedLanguage = result!.detectedLanguage;
+      notifyListeners();
+    }
+  }
+
+  void applyIntentLanguage(SupportedVoiceLanguage? lang) {
+    if (lang == null) return;
+    lastDetectedLanguage = lang;
+    notifyListeners();
+  }
+
+  /// `speech_to_text` locale IDs to try in order.
+  List<String> sttLocaleTryOrder() {
+    const mk = ['mk_MK', 'mk-MK'];
+    const en = ['en_US', 'en-US'];
+    const sq = ['sq_AL', 'sq-AL'];
+
+    if (prioritizeMacedonianForStt) {
+      return [...mk, ...en, ...sq];
+    }
+
+    switch (_userUiLanguageCode.toLowerCase()) {
+      case 'mk':
+        return [...mk, ...en, ...sq];
+      case 'sq':
+        return [...sq, ...mk, ...en];
+      case 'en':
+      default:
+        return [...en, ...mk, ...sq];
+    }
+  }
+
+  SupportedVoiceLanguage feedbackLanguage() {
+    return lastDetectedLanguage ??
+        SupportedVoiceLanguage.fromUiLanguageCode(_userUiLanguageCode);
+  }
+}

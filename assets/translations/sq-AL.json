@@ -16,7 +16,10 @@
     "speak_command": "Thuaj një komandë. Për shembull: Braille, libër fotosh, lojëra me numra, cilësimet.",
     "not_recognized": "Komanda nuk u njoh. Provoni përsëri.",
     "listening": "Duke dëgjuar...",
-    "tap_to_speak": "Komandë me zë"
+    "tap_to_speak": "Komandë me zë",
+    "confirm_wifi_disable": "Jeni të sigurt që doni të fikni Wi‑Fi? Thoni po ose jo.",
+    "session_cancelled": "U anulua.",
+    "system_wifi_unavailable": "Wi‑Fi nuk mund të ndryshohet nga ky aplikacion. Përdorni cilësimet e telefonit."
   },
   "braille": {
     "title": "Alfabeti Braille",

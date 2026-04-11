@@ -16,7 +16,10 @@
     "speak_command": "Say a command. For example: Braille, picture book, number games, settings.",
     "not_recognized": "Command not recognized. Try again.",
     "listening": "Listening...",
-    "tap_to_speak": "Voice command"
+    "tap_to_speak": "Voice command",
+    "confirm_wifi_disable": "Are you sure you want to turn off Wi‑Fi? Say yes or no.",
+    "session_cancelled": "Cancelled.",
+    "system_wifi_unavailable": "Wi‑Fi cannot be changed from this app. Use your phone settings."
   },
   "braille": {
     "title": "Braille Alphabet",

@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'home_screen.dart';
 import '../providers/app_state_provider.dart';
 import '../services/voice_assistant_service.dart';
+import '../voice_system/application/language_manager.dart';
 import '../utils/accessibility_utils.dart';
 
 class LanguageSelectionScreen extends StatelessWidget {
@@ -155,6 +156,7 @@ class LanguageSelectionScreen extends StatelessWidget {
       // Wait so subsequent UI/audio reflects the new locale.
       await context.setLocale(locale);
       Provider.of<AppStateProvider>(context, listen: false).setLanguage(langCode);
+      Provider.of<LanguageManager>(context, listen: false).setUserUiLanguageCode(langCode);
 
       await AccessibilityUtils.provideFeedback(
         context: context,

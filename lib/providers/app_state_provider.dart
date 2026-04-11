@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
 
 class AppStateProvider extends ChangeNotifier {
-  String _currentLanguage = 'en';
+  String _currentLanguage = 'mk';
   bool _isVoiceAssistantEnabled = true;
   double _volume = 1.0;
   bool _vibrationEnabled = true;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:hear_and_see_safe/providers/app_state_provider.dart';
+import 'package:hear_and_see_safe/voice_system/application/language_manager.dart';
 import 'package:hear_and_see_safe/providers/accessibility_provider.dart';
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
@@ -93,8 +94,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           child: Column(
             children: [
-              _buildLanguageOption(context, 'English', 'en', appState.currentLanguage),
               _buildLanguageOption(context, 'Македонски', 'mk', appState.currentLanguage),
+              _buildLanguageOption(context, 'English', 'en', appState.currentLanguage),
               _buildLanguageOption(context, 'Shqip', 'sq', appState.currentLanguage),
             ],
           ),
@@ -135,6 +136,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         // Wait so UI text + translations update immediately.
         await context.setLocale(_localeForCode(code));
         Provider.of<AppStateProvider>(context, listen: false).setLanguage(code);
+        Provider.of<LanguageManager>(context, listen: false).setUserUiLanguageCode(code);
         await AccessibilityUtils.provideFeedback(
           context: context,
           audioFeedback: 'settings.language_changed'.tr(),

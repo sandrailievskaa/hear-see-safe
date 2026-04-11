@@ -9,6 +9,10 @@ import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
 import 'package:hear_and_see_safe/services/speech_command_service.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
 import 'package:hear_and_see_safe/screens/language_selection_screen.dart';
+import 'package:hear_and_see_safe/voice_system/application/language_manager.dart';
+import 'package:hear_and_see_safe/voice_system/application/voice_command_orchestrator.dart';
+import 'package:hear_and_see_safe/voice_system/voice_system_config.dart';
+import 'package:hear_and_see_safe/voice_system/voice_system_factory.dart';
 
 
 void main() async {
@@ -33,7 +37,7 @@ void main() async {
         Locale('sq', 'AL'),
       ],
       path: 'assets/translations',
-      fallbackLocale: const Locale('en', 'US'),
+      fallbackLocale: const Locale('mk', 'MK'),
       saveLocale: true,
       useFallbackTranslations: true,
       child: const HearAndSeeSafeApp(),
@@ -50,6 +54,15 @@ class HearAndSeeSafeApp extends StatelessWidget {
       providers: [
         Provider(create: (_) => VoiceAssistantService()),
         Provider(create: (_) => SpeechCommandService()),
+        ChangeNotifierProvider(create: (_) => LanguageManager()),
+        Provider<VoiceCommandOrchestrator>(
+          create: (context) => VoiceSystemFactory.createOrchestrator(
+            config: VoiceSystemConfig.fromEnvironment(),
+            languageManager: context.read<LanguageManager>(),
+            voiceAssistant: context.read<VoiceAssistantService>(),
+          ),
+          dispose: (_, o) => o.dispose(),
+        ),
         ChangeNotifierProxyProvider<VoiceAssistantService, AppStateProvider>(
           create: (_) => AppStateProvider(),
           update: (context, voiceAssistant, previous) {
