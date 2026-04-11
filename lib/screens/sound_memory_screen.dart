@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
 import 'package:hear_and_see_safe/utils/vibration_utils.dart';
+import 'package:hear_and_see_safe/widgets/game_screen_chrome.dart';
 import 'package:audioplayers/audioplayers.dart';
 
 /// Аудио меморија за деца: наместо картички се слушаат звуци.
@@ -159,48 +159,29 @@ class _SoundMemoryScreenState extends State<SoundMemoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = AccessibilityUtils.getBackgroundColor(context);
     final contrastColor = AccessibilityUtils.getContrastColor(context);
 
     final matchedCount = _matched.where((x) => x).length;
-    final totalPairs = _cards.length ~/ 2;
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        title: Text(
-          'features.sound_memory'.tr(),
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: contrastColor,
-          ),
-        ),
-        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
-      ),
-      body: SafeArea(
+    return GameScreenChrome(
+      accent: const Color(0xFFDB2777),
+      title: 'features.sound_memory'.tr(),
+      child: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            GameSoftPanel(
+              accent: const Color(0xFFDB2777),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   Text(
                     'sound_memory.matches'.tr(args: [matchedCount.toString()]),
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: contrastColor,
-                    ),
+                    style: GameTypography.heading(context, contrastColor, 18),
                   ),
                   Text(
                     'sound_memory.moves'.tr(args: [_moves.toString()]),
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: contrastColor,
-                    ),
+                    style: GameTypography.heading(context, contrastColor, 18),
                   ),
                 ],
               ),
@@ -273,17 +254,17 @@ class _SoundMemoryScreenState extends State<SoundMemoryScreen> {
                     },
                     icon: const Icon(Icons.refresh),
                     label: Text('sound_memory.restart'.tr()),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AccessibilityUtils.getPrimaryButtonBackground(context),
-                    foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
-                    textStyle: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AccessibilityUtils.getPrimaryButtonBackground(context),
+                      foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
+                      textStyle: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
             ),
           ],
         ),

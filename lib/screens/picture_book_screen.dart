@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
 import 'package:hear_and_see_safe/utils/vibration_utils.dart';
+import 'package:hear_and_see_safe/widgets/game_screen_chrome.dart';
 import 'package:audioplayers/audioplayers.dart';
 
 /// Мултимедијална сликовница за слабовиди (модул „Учи и Слушај“).
@@ -350,7 +350,6 @@ class _PictureBookScreenState extends State<PictureBookScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = AccessibilityUtils.getBackgroundColor(context);
     final contrastColor = AccessibilityUtils.getContrastColor(context);
     final item = _items[_currentIndex];
     final name = item.nameKey.tr();
@@ -361,32 +360,22 @@ class _PictureBookScreenState extends State<PictureBookScreen> {
     final longPressHint = 'picture_book.long_press_hint'.tr();
     final helpLabel = 'picture_book.help'.tr();
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        title: Text(
-          'picture_book.title'.tr().isNotEmpty
-              ? 'picture_book.title'.tr()
-              : 'features.picture_book'.tr(),
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: contrastColor,
+    return GameScreenChrome(
+      accent: const Color(0xFF2563EB),
+      title: 'picture_book.title'.tr().isNotEmpty
+          ? 'picture_book.title'.tr()
+          : 'features.picture_book'.tr(),
+      actions: [
+        Semantics(
+          label: helpLabel.isNotEmpty ? helpLabel : 'Help',
+          button: true,
+          child: IconButton(
+            icon: const Icon(Icons.help_outline),
+            onPressed: _speakIntro,
           ),
         ),
-        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
-        actions: [
-          Semantics(
-            label: helpLabel.isNotEmpty ? helpLabel : 'Help',
-            button: true,
-            child: IconButton(
-              icon: Icon(Icons.help_outline, color: AccessibilityUtils.getPrimaryButtonForeground(context)),
-              onPressed: _speakIntro,
-            ),
-          ),
-        ],
-      ),
-      body: SafeArea(
+      ],
+      child: SafeArea(
         child: Column(
           children: [
             Expanded(
@@ -416,7 +405,7 @@ class _PictureBookScreenState extends State<PictureBookScreen> {
                       border: Border.all(color: contrastColor, width: 3),
                       boxShadow: [
                         BoxShadow(
-                          color: contrastColor.withOpacity(0.25),
+                          color: contrastColor.withValues(alpha: 0.25),
                           blurRadius: 18,
                           spreadRadius: 2,
                         ),

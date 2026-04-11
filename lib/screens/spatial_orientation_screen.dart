@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
 import 'package:hear_and_see_safe/utils/vibration_utils.dart';
+import 'package:hear_and_see_safe/widgets/game_screen_chrome.dart';
 
 /// Просторна ориентација како игра за слепи: апликацијата ја чита целата инструкција
 /// (на пр. „на равна површина прошетајте 5 чекори напред, свртете лево...“).
@@ -140,27 +141,16 @@ class _SpatialOrientationScreenState extends State<SpatialOrientationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = AccessibilityUtils.getBackgroundColor(context);
     final contrastColor = AccessibilityUtils.getContrastColor(context);
 
     return Focus(
       autofocus: true,
-      child: Scaffold(
-        backgroundColor: backgroundColor,
-        appBar: AppBar(
-          title: Text(
-            'spatial.title'.tr().isNotEmpty
-                ? 'spatial.title'.tr()
-                : 'features.spatial_orientation'.tr(),
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: contrastColor,
-            ),
-          ),
-          backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
-        ),
-        body: SafeArea(
+      child: GameScreenChrome(
+        accent: const Color(0xFF7C3AED),
+        title: 'spatial.title'.tr().isNotEmpty
+            ? 'spatial.title'.tr()
+            : 'features.spatial_orientation'.tr(),
+        child: SafeArea(
           child: Column(
             children: [
               Padding(
@@ -170,11 +160,7 @@ class _SpatialOrientationScreenState extends State<SpatialOrientationScreen> {
                     (_currentIndex).toString(),
                     _expectedSequence.length.toString(),
                   ]),
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: contrastColor,
-                  ),
+                  style: GameTypography.heading(context, contrastColor, 20),
                 ),
               ),
               if (_finished)
@@ -226,7 +212,7 @@ class _SpatialOrientationScreenState extends State<SpatialOrientationScreen> {
                     contrastColor: contrastColor,
                   ),
                   const SizedBox(width: 24),
-                  SizedBox(width: 72, height: 56),
+                  const SizedBox(width: 72, height: 56),
                   const SizedBox(width: 24),
                   _arrowButton(
                     context,

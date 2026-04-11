@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
+import 'package:hear_and_see_safe/theme/app_style.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
 import 'package:hear_and_see_safe/utils/vibration_utils.dart';
+import 'package:hear_and_see_safe/widgets/game_screen_chrome.dart';
 import 'package:audioplayers/audioplayers.dart';
 
 /// Идентификација на звук за деца: се пушта вистински звук (животно, возило, природа),
@@ -18,6 +19,8 @@ class SoundIdentificationScreen extends StatefulWidget {
 }
 
 class _SoundIdentificationScreenState extends State<SoundIdentificationScreen> {
+  static const Color _moduleAccent = Color(0xFF0D9488);
+
   late VoiceAssistantService _voiceAssistant;
   final AudioPlayer _audioPlayer = AudioPlayer();
 
@@ -137,23 +140,13 @@ class _SoundIdentificationScreenState extends State<SoundIdentificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = AccessibilityUtils.getBackgroundColor(context);
     final contrastColor = AccessibilityUtils.getContrastColor(context);
+    final hc = AccessibilityUtils.isHighContrast(context);
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        title: Text(
-          'features.sound_identification'.tr(),
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: contrastColor,
-          ),
-        ),
-        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
-      ),
-      body: SafeArea(
+    return GameScreenChrome(
+      accent: _moduleAccent,
+      title: 'features.sound_identification'.tr(),
+      child: SafeArea(
         child: Column(
           children: [
             const SizedBox(height: 16),
@@ -161,9 +154,20 @@ class _SoundIdentificationScreenState extends State<SoundIdentificationScreen> {
               width: 140,
               height: 140,
               decoration: BoxDecoration(
-                color: AccessibilityUtils.getPrimaryButtonBackground(context),
                 shape: BoxShape.circle,
+                gradient: hc
+                    ? null
+                    : LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          _moduleAccent,
+                          Color.lerp(_moduleAccent, const Color(0xFF5EEAD4), 0.45)!,
+                        ],
+                      ),
+                color: hc ? AccessibilityUtils.getPrimaryButtonBackground(context) : null,
                 border: Border.all(color: contrastColor, width: 4),
+                boxShadow: hc ? const <BoxShadow>[] : AppStyle.cardShadow(false),
               ),
               child: Icon(
                 Icons.hearing,
@@ -174,11 +178,7 @@ class _SoundIdentificationScreenState extends State<SoundIdentificationScreen> {
             const SizedBox(height: 16),
             Text(
               'sound.choose'.tr(),
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: contrastColor,
-              ),
+              style: GameTypography.heading(context, contrastColor, 22),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
@@ -218,11 +218,7 @@ class _SoundIdentificationScreenState extends State<SoundIdentificationScreen> {
                     _score.toString(),
                     _totalQuestions.toString(),
                   ]),
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: contrastColor,
-                  ),
+                  style: GameTypography.heading(context, contrastColor, 20),
                 ),
               ],
             ),

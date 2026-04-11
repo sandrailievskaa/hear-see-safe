@@ -10,6 +10,7 @@ import 'package:hear_and_see_safe/voice_system/application/voice_ui_strings.dart
 import 'package:hear_and_see_safe/voice_system/presentation/voice_intent_dispatcher.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
 import 'package:hear_and_see_safe/theme/app_style.dart';
+import 'package:hear_and_see_safe/widgets/ambient_background.dart';
 import 'package:hear_and_see_safe/screens/braille_learning_screen.dart';
 import 'package:hear_and_see_safe/screens/picture_book_screen.dart';
 import 'package:hear_and_see_safe/screens/number_games_screen.dart';
@@ -40,6 +41,22 @@ class _HomeFeature {
   final Widget screen;
 }
 
+class _HomeSection {
+  const _HomeSection({
+    required this.titleKey,
+    required this.hintKey,
+    required this.icon,
+    required this.tint,
+    required this.features,
+  });
+
+  final String titleKey;
+  final String hintKey;
+  final IconData icon;
+  final Color tint;
+  final List<_HomeFeature> features;
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -47,23 +64,25 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   late VoiceAssistantService _voiceAssistant;
   bool _isListening = false;
+  late AnimationController _fabPulse;
+  late Animation<double> _fabScale;
 
-  static final List<_HomeFeature> _features = [
+  static const List<_HomeFeature> _learnFeatures = [
     _HomeFeature(
       icon: Icons.grid_view_rounded,
       titleKey: 'features.braille',
       descKey: 'features.braille_desc',
-      accent: Color(0xFF1D4ED8),
+      accent: Color(0xFF4F46E5),
       screen: const BrailleLearningScreen(),
     ),
     _HomeFeature(
       icon: Icons.auto_stories_rounded,
       titleKey: 'features.picture_book',
       descKey: 'features.picture_book_desc',
-      accent: Color(0xFF2563EB),
+      accent: Color(0xFF6366F1),
       screen: const PictureBookScreen(),
     ),
     _HomeFeature(
@@ -77,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
       icon: Icons.photo_camera_rounded,
       titleKey: 'features.camera_recognition',
       descKey: 'features.camera_recognition_desc',
-      accent: Color(0xFFD97706),
+      accent: Color(0xFFEA580C),
       screen: const CameraRecognitionScreen(),
     ),
     _HomeFeature(
@@ -87,19 +106,15 @@ class _HomeScreenState extends State<HomeScreen> {
       accent: Color(0xFF7C3AED),
       screen: const SpatialOrientationScreen(),
     ),
+  ];
+
+  static const List<_HomeFeature> _soundFeatures = [
     _HomeFeature(
       icon: Icons.hearing_rounded,
       titleKey: 'features.sound_identification',
       descKey: 'features.sound_identification_desc',
       accent: Color(0xFF0D9488),
       screen: const SoundIdentificationScreen(),
-    ),
-    _HomeFeature(
-      icon: Icons.shield_rounded,
-      titleKey: 'features.cyber_safety',
-      descKey: 'features.cyber_safety_desc',
-      accent: Color(0xFFDC2626),
-      screen: const CyberSafetyScreen(),
     ),
     _HomeFeature(
       icon: Icons.psychology_rounded,
@@ -112,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
       icon: Icons.sports_esports_rounded,
       titleKey: 'features.voice_pong',
       descKey: 'features.voice_pong_desc',
-      accent: Color(0xFFCA8A04),
+      accent: Color(0xFFD97706),
       screen: const VoicePongScreen(),
     ),
     _HomeFeature(
@@ -138,6 +153,40 @@ class _HomeScreenState extends State<HomeScreen> {
     ),
   ];
 
+  static const List<_HomeFeature> _safeFeatures = [
+    _HomeFeature(
+      icon: Icons.verified_user_rounded,
+      titleKey: 'features.cyber_safety',
+      descKey: 'features.cyber_safety_desc',
+      accent: Color(0xFFDC2626),
+      screen: const CyberSafetyScreen(),
+    ),
+  ];
+
+  static const List<_HomeSection> _sections = [
+    _HomeSection(
+      titleKey: 'home.section_learn',
+      hintKey: 'home.section_learn_hint',
+      icon: Icons.school_rounded,
+      tint: Color(0xFF4F46E5),
+      features: _learnFeatures,
+    ),
+    _HomeSection(
+      titleKey: 'home.section_sound',
+      hintKey: 'home.section_sound_hint',
+      icon: Icons.headphones_rounded,
+      tint: Color(0xFF0D9488),
+      features: _soundFeatures,
+    ),
+    _HomeSection(
+      titleKey: 'home.section_safe',
+      hintKey: 'home.section_safe_hint',
+      icon: Icons.shield_rounded,
+      tint: Color(0xFFE11D48),
+      features: _safeFeatures,
+    ),
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -145,6 +194,20 @@ class _HomeScreenState extends State<HomeScreen> {
     _voiceAssistant.initialize();
     _updateVoiceAssistantSettings();
     _announceHomeScreen();
+
+    _fabPulse = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    )..repeat(reverse: true);
+    _fabScale = Tween<double>(begin: 1.0, end: 1.06).animate(
+      CurvedAnimation(parent: _fabPulse, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _fabPulse.dispose();
+    super.dispose();
   }
 
   @override
@@ -208,6 +271,248 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildHero({
+    required bool hc,
+    required double buttonSize,
+    required Color contrastColor,
+    required Color secondaryColor,
+  }) {
+    final welcome = 'home.welcome'.tr();
+    final sub = 'home.hero_subtitle'.tr();
+
+    if (hc) {
+      return Semantics(
+        container: true,
+        label: '$welcome $sub',
+        child: ExcludeSemantics(
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 20, top: 4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  welcome,
+                  style: GoogleFonts.lexend(
+                    fontSize: 16 * buttonSize,
+                    fontWeight: FontWeight.w700,
+                    height: 1.4,
+                    color: contrastColor,
+                  ),
+                ),
+                SizedBox(height: 8 * buttonSize),
+                Text(
+                  sub,
+                  style: GoogleFonts.lexend(
+                    fontSize: 14 * buttonSize,
+                    fontWeight: FontWeight.w500,
+                    color: secondaryColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Semantics(
+      container: true,
+      label: '$welcome $sub',
+      child: ExcludeSemantics(
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 22, top: 4),
+          padding: EdgeInsets.all(20 * buttonSize),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(26),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF0F766E),
+                Color(0xFF0D9488),
+                Color(0xFF2DD4BF),
+              ],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF0F766E).withValues(alpha: 0.35),
+                blurRadius: 24,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  _heroChip(Icons.school_rounded),
+                  SizedBox(width: 8 * buttonSize),
+                  _heroChip(Icons.graphic_eq_rounded),
+                  SizedBox(width: 8 * buttonSize),
+                  _heroChip(Icons.shield_rounded),
+                  SizedBox(width: 8 * buttonSize),
+                  _heroChip(Icons.favorite_rounded),
+                ],
+              ),
+              SizedBox(height: 16 * buttonSize),
+              Text(
+                welcome,
+                style: GoogleFonts.lexend(
+                  fontSize: 16 * buttonSize,
+                  fontWeight: FontWeight.w600,
+                  height: 1.45,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: 8 * buttonSize),
+              Text(
+                sub,
+                style: GoogleFonts.lexend(
+                  fontSize: 13 * buttonSize,
+                  fontWeight: FontWeight.w500,
+                  height: 1.4,
+                  color: Colors.white.withValues(alpha: 0.92),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _heroChip(IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.22),
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
+      ),
+      child: Icon(icon, color: Colors.white, size: 20),
+    );
+  }
+
+  Widget _buildSectionHeader({
+    required _HomeSection section,
+    required bool hc,
+    required double buttonSize,
+    required Color contrastColor,
+  }) {
+    final title = section.titleKey.tr();
+    final hint = section.hintKey.tr();
+
+    if (hc) {
+      return Semantics(
+        header: true,
+        label: '$title. $hint',
+        child: Padding(
+          padding: EdgeInsets.only(top: 22 * buttonSize, bottom: 12 * buttonSize),
+          child: Row(
+            children: [
+              Icon(section.icon, color: section.tint, size: 28 * buttonSize),
+              SizedBox(width: 12 * buttonSize),
+              Expanded(
+                child: Text(
+                  title,
+                  style: GoogleFonts.lexend(
+                    fontSize: 20 * buttonSize,
+                    fontWeight: FontWeight.w800,
+                    color: contrastColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Semantics(
+      header: true,
+      label: '$title. $hint',
+      child: ExcludeSemantics(
+        child: Padding(
+          padding: EdgeInsets.only(top: 22 * buttonSize, bottom: 12 * buttonSize),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 18 * buttonSize, vertical: 14 * buttonSize),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                colors: [
+                  section.tint.withValues(alpha: 0.2),
+                  section.tint.withValues(alpha: 0.06),
+                ],
+              ),
+              border: Border.all(color: section.tint.withValues(alpha: 0.35), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: section.tint.withValues(alpha: 0.12),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(12 * buttonSize),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [
+                        section.tint.withValues(alpha: 0.45),
+                        section.tint.withValues(alpha: 0.2),
+                      ],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: section.tint.withValues(alpha: 0.25),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Icon(section.icon, color: Colors.white, size: 24 * buttonSize),
+                ),
+                SizedBox(width: 16 * buttonSize),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.lexend(
+                          fontSize: 18 * buttonSize,
+                          fontWeight: FontWeight.w800,
+                          color: AppStyle.textPrimary,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      SizedBox(height: 4 * buttonSize),
+                      Text(
+                        hint,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.lexend(
+                          fontSize: 12 * buttonSize,
+                          fontWeight: FontWeight.w500,
+                          color: AppStyle.textSecondary,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final hc = AccessibilityUtils.isHighContrast(context);
@@ -219,13 +524,14 @@ class _HomeScreenState extends State<HomeScreen> {
         ? AccessibilityUtils.getDisabledColor(context)
         : (hc ? AccessibilityUtils.getPrimaryButtonBackground(context) : const Color(0xFF115E59));
     final fabFg = AccessibilityUtils.getPrimaryButtonForeground(context);
+    final pulseOn = !hc && !_isListening;
 
     return Scaffold(
       backgroundColor: hc ? backgroundColor : Colors.transparent,
       extendBody: false,
       appBar: AppBar(
         centerTitle: false,
-        elevation: hc ? 0 : 0,
+        elevation: 0,
         scrolledUnderElevation: 0,
         backgroundColor: hc ? AccessibilityUtils.getAppBarBackgroundColor(context) : Colors.transparent,
         flexibleSpace: hc
@@ -260,107 +566,122 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      floatingActionButton: Material(
-        elevation: hc ? 0 : 8,
-        shadowColor: const Color(0xFF115E59).withValues(alpha: 0.45),
-        borderRadius: BorderRadius.circular(20),
-        child: InkWell(
-          onTap: _isListening ? null : _startVoiceCommand,
-          borderRadius: BorderRadius.circular(20),
-          child: Ink(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              gradient: _isListening || hc
-                  ? null
-                  : const LinearGradient(
-                      colors: [Color(0xFF115E59), Color(0xFF0D9488)],
-                    ),
-              color: (_isListening || hc) ? fabBg : null,
-              border: hc
-                  ? Border.all(color: contrastColor, width: 2)
-                  : null,
-            ),
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: 22 * buttonSize,
-                vertical: 16 * buttonSize,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    _isListening ? Icons.mic_rounded : Icons.mic_none_rounded,
-                    color: fabFg,
-                    size: 26 * buttonSize,
+      floatingActionButton: Semantics(
+        button: true,
+        label: 'home.fab_semantics'.tr(),
+        child: AnimatedBuilder(
+          animation: _fabPulse,
+          builder: (context, child) {
+            final scale = pulseOn ? _fabScale.value : 1.0;
+            return Transform.scale(
+              scale: scale,
+              child: child,
+            );
+          },
+          child: Material(
+            elevation: hc ? 0 : 10,
+            shadowColor: const Color(0xFF115E59).withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(22),
+            child: InkWell(
+              onTap: _isListening ? null : _startVoiceCommand,
+              borderRadius: BorderRadius.circular(22),
+              child: Ink(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(22),
+                  gradient: _isListening || hc
+                      ? null
+                      : const LinearGradient(
+                          colors: [Color(0xFF115E59), Color(0xFF14B8A6), Color(0xFF5EEAD4)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                  color: (_isListening || hc) ? fabBg : null,
+                  border: hc ? Border.all(color: contrastColor, width: 2) : null,
+                ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 22 * buttonSize,
+                    vertical: 16 * buttonSize,
                   ),
-                  SizedBox(width: 10 * buttonSize),
-                  Text(
-                    _isListening ? 'voice.listening'.tr() : 'voice.tap_to_speak'.tr(),
-                    style: GoogleFonts.lexend(
-                      fontSize: 16 * buttonSize,
-                      fontWeight: FontWeight.w700,
-                      color: fabFg,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _isListening ? Icons.mic_rounded : Icons.record_voice_over_rounded,
+                        color: fabFg,
+                        size: 28 * buttonSize,
+                      ),
+                      SizedBox(width: 10 * buttonSize),
+                      Text(
+                        _isListening ? 'voice.listening'.tr() : 'voice.tap_to_speak'.tr(),
+                        style: GoogleFonts.lexend(
+                          fontSize: 16 * buttonSize,
+                          fontWeight: FontWeight.w800,
+                          color: fabFg,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
         ),
       ),
-      body: Container(
-        width: double.infinity,
-        decoration: hc
-            ? BoxDecoration(color: backgroundColor)
-            : const BoxDecoration(gradient: AppStyle.homeBodyGradient),
-        child: SafeArea(
-          top: false,
-          child: ListView.builder(
-            padding: EdgeInsets.fromLTRB(20, 12, 20, 100),
-            itemCount: _features.length + 1,
-            itemBuilder: (context, index) {
-              if (index == 0) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 20, top: 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'home.welcome'.tr(),
-                        style: GoogleFonts.lexend(
-                          fontSize: 15 * buttonSize,
-                          fontWeight: FontWeight.w500,
-                          height: 1.45,
-                          color: secondaryColor,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Container(
+              decoration: hc
+                  ? BoxDecoration(color: backgroundColor)
+                  : const BoxDecoration(gradient: AppStyle.homeBodyGradient),
+            ),
+          ),
+          if (!hc) const Positioned.fill(child: AmbientBackground(variant: AmbientVariant.home)),
+          Positioned.fill(
+            child: SafeArea(
+              top: false,
+              child: ListView(
+                padding: EdgeInsets.fromLTRB(20, 8, 20, 110),
+                children: [
+                  _buildHero(
+                    hc: hc,
+                    buttonSize: buttonSize,
+                    contrastColor: contrastColor,
+                    secondaryColor: secondaryColor,
+                  ),
+                  for (final section in _sections) ...[
+                    _buildSectionHeader(
+                      section: section,
+                      hc: hc,
+                      buttonSize: buttonSize,
+                      contrastColor: contrastColor,
+                    ),
+                    for (final f in section.features) ...[
+                      Padding(
+                        padding: EdgeInsets.only(bottom: 12 * buttonSize),
+                        child: _buildFeatureCard(
+                          context,
+                          icon: f.icon,
+                          title: f.titleKey.tr(),
+                          description: f.descKey.tr(),
+                          accent: f.accent,
+                          buttonSize: buttonSize,
+                          contrastColor: contrastColor,
+                          secondaryColor: secondaryColor,
+                          highContrast: hc,
+                          semanticLabel:
+                              '${f.titleKey.tr()}. ${f.descKey.tr()}. ${'features.tap_to_open'.tr()}',
+                          onTap: () => _navigateToScreen(f.screen, f.titleKey.tr()),
                         ),
                       ),
                     ],
-                  ),
-                );
-              }
-              final f = _features[index - 1];
-              final title = f.titleKey.tr();
-              final desc = f.descKey.tr();
-              final hint = 'features.tap_to_open'.tr();
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 14),
-                child: _buildFeatureCard(
-                  context,
-                  icon: f.icon,
-                  title: title,
-                  description: desc,
-                  accent: f.accent,
-                  buttonSize: buttonSize,
-                  contrastColor: contrastColor,
-                  secondaryColor: secondaryColor,
-                  highContrast: hc,
-                  semanticLabel: '$title. $desc. $hint',
-                  onTap: () => _navigateToScreen(f.screen, title),
-                ),
-              );
-            },
+                  ],
+                ],
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -406,15 +727,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Container(
-                    width: 5,
+                    width: 6,
                     decoration: BoxDecoration(
-                      color: accent,
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [accent, accent.withValues(alpha: 0.65)],
+                      ),
                       borderRadius: const BorderRadius.horizontal(left: Radius.circular(20)),
                     ),
                   ),
                   Expanded(
                     child: Padding(
-                      padding: EdgeInsets.all(18 * buttonSize),
+                      padding: EdgeInsets.all(16 * buttonSize),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
@@ -423,12 +748,17 @@ class _HomeScreenState extends State<HomeScreen> {
                             decoration: BoxDecoration(
                               color: highContrast
                                   ? AccessibilityUtils.getPrimaryButtonBackground(context)
-                                  : accent.withValues(alpha: 0.14),
+                                  : accent.withValues(alpha: 0.13),
                               borderRadius: BorderRadius.circular(18),
+                              border: Border.all(
+                                color: highContrast
+                                    ? contrastColor
+                                    : accent.withValues(alpha: 0.25),
+                              ),
                             ),
                             child: Icon(
                               icon,
-                              size: 32 * buttonSize,
+                              size: 34 * buttonSize,
                               color: highContrast
                                   ? AccessibilityUtils.getPrimaryButtonForeground(context)
                                   : accent,
@@ -444,7 +774,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   title,
                                   style: GoogleFonts.lexend(
                                     fontSize: 18 * buttonSize,
-                                    fontWeight: FontWeight.w700,
+                                    fontWeight: FontWeight.w800,
                                     height: 1.2,
                                     color: contrastColor,
                                   ),
@@ -459,17 +789,22 @@ class _HomeScreenState extends State<HomeScreen> {
                                     fontWeight: FontWeight.w500,
                                     height: 1.35,
                                     color: secondaryColor.withValues(
-                                      alpha: highContrast ? 1.0 : 0.92,
+                                      alpha: highContrast ? 1.0 : 0.95,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          Icon(
-                            Icons.arrow_forward_ios_rounded,
-                            color: accent,
-                            size: 18 * buttonSize,
+                          ExcludeSemantics(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.touch_app_rounded, color: accent.withValues(alpha: 0.85), size: 22 * buttonSize),
+                                SizedBox(height: 4 * buttonSize),
+                                Icon(Icons.arrow_forward_ios_rounded, color: accent, size: 16 * buttonSize),
+                              ],
+                            ),
                           ),
                         ],
                       ),

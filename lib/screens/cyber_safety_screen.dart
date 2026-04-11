@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
 import 'package:hear_and_see_safe/utils/vibration_utils.dart';
+import 'package:hear_and_see_safe/widgets/game_screen_chrome.dart';
 
 class CyberSafetyScreen extends StatefulWidget {
   const CyberSafetyScreen({super.key});
@@ -146,57 +146,54 @@ class _CyberSafetyScreenState extends State<CyberSafetyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = AccessibilityUtils.getBackgroundColor(context);
     final contrastColor = AccessibilityUtils.getContrastColor(context);
 
     if (_currentQuestion >= _questions.length) {
-      return Scaffold(
-        backgroundColor: backgroundColor,
-        appBar: AppBar(
-          title: Text(
-            'features.cyber_safety'.tr(),
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: contrastColor),
-          ),
-          backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
-        ),
-        body: SafeArea(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'cyber.results_title'.tr(),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: contrastColor),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  'cyber.score'.tr(args: [
-                    _score.toString(),
-                    _questions.length.toString(),
-                  ]),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: contrastColor),
-                ),
-                const SizedBox(height: 40),
-                SizedBox(
-                  width: double.infinity,
-                  height: 70,
-                  child: ElevatedButton.icon(
-                    onPressed: _restart,
-                    icon: const Icon(Icons.refresh),
-                    label: Text(
-                      'cyber.restart'.tr(),
-                      textAlign: TextAlign.center,
-                      softWrap: true,
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
-                      foregroundColor: contrastColor,
+      return GameScreenChrome(
+        accent: const Color(0xFFDC2626),
+        title: 'features.cyber_safety'.tr(),
+        titleFontSize: 26,
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'cyber.results_title'.tr(),
+                    textAlign: TextAlign.center,
+                    style: GameTypography.heading(context, contrastColor, 22),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'cyber.score'.tr(args: [
+                      _score.toString(),
+                      _questions.length.toString(),
+                    ]),
+                    textAlign: TextAlign.center,
+                    style: GameTypography.body(context, contrastColor, 18),
+                  ),
+                  const SizedBox(height: 40),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 70,
+                    child: ElevatedButton.icon(
+                      onPressed: _restart,
+                      icon: const Icon(Icons.refresh),
+                      label: Text(
+                        'cyber.restart'.tr(),
+                        textAlign: TextAlign.center,
+                        softWrap: true,
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
+                        foregroundColor: contrastColor,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -205,26 +202,23 @@ class _CyberSafetyScreenState extends State<CyberSafetyScreen> {
 
     final question = _questions[_currentQuestion];
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        title: Text(
-          'features.cyber_safety'.tr(),
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: contrastColor),
-        ),
-        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
-      ),
-      body: SafeArea(
+    return GameScreenChrome(
+      accent: const Color(0xFFDC2626),
+      title: 'features.cyber_safety'.tr(),
+      titleFontSize: 26,
+      child: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
+            GameSoftPanel(
+              accent: const Color(0xFFDC2626),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: Text(
                 'cyber.progress'.tr(args: [
                   (_currentQuestion + 1).toString(),
                   _questions.length.toString(),
                 ]),
                 textAlign: TextAlign.center,
+                style: GameTypography.body(context, contrastColor, 17),
               ),
             ),
             Expanded(
@@ -233,10 +227,14 @@ class _CyberSafetyScreenState extends State<CyberSafetyScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      question.question,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: contrastColor),
+                    GameSoftPanel(
+                      accent: const Color(0xFFDC2626),
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Text(
+                        question.question,
+                        textAlign: TextAlign.center,
+                        style: GameTypography.heading(context, contrastColor, 18),
+                      ),
                     ),
                     const SizedBox(height: 20),
                     ...question.options.asMap().entries.map((entry) {

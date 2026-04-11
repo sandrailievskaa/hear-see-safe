@@ -10,7 +10,15 @@
     "voice_assistant_ready": "Voice assistant is ready."
   },
   "home": {
-    "welcome": "Welcome to Hear and See Safe. Choose a feature to begin."
+    "welcome": "Welcome to Hear and See Safe. Choose a feature to begin.",
+    "hero_subtitle": "Learning · sound · safety — accessible for everyone",
+    "section_learn": "Learn & explore",
+    "section_learn_hint": "Learning section. Five activities below.",
+    "section_sound": "Listen & play",
+    "section_sound_hint": "Sound and games section. Six activities below.",
+    "section_safe": "Stay safe online",
+    "section_safe_hint": "Safety section. One activity below.",
+    "fab_semantics": "Voice command. Tap and say where you want to go, for example settings or picture book."
   },
   "voice": {
     "speak_command": "Say a command. For example: Braille, picture book, number games, settings.",

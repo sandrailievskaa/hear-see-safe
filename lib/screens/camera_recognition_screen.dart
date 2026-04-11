@@ -1,13 +1,14 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:camera/camera.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
+import 'package:hear_and_see_safe/theme/app_style.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
+import 'package:hear_and_see_safe/widgets/game_screen_chrome.dart';
 import 'package:hear_and_see_safe/utils/vibration_utils.dart';
 
 class CameraRecognitionScreen extends StatefulWidget {
@@ -205,8 +206,6 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor =
-    AccessibilityUtils.getBackgroundColor(context);
     final contrastColor =
     AccessibilityUtils.getContrastColor(context);
 
@@ -217,69 +216,64 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
       'clothing': 'camera.clothing'.tr(),
     };
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        title: Text(
-          'features.camera_recognition'.tr(),
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: contrastColor,
-          ),
+    final hc = AccessibilityUtils.isHighContrast(context);
+
+    return GameScreenChrome(
+      accent: const Color(0xFFEA580C),
+      title: 'features.camera_recognition'.tr(),
+      child: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 12),
+
+            // ✅ КОПЧИЊА ВО ЕДЕН РЕД (FIX)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Row(
+                children: [
+                  _modeButton(context, 'currency', modeLabels['currency']!, contrastColor),
+                  _modeButton(context, 'color', modeLabels['color']!, contrastColor),
+                  _modeButton(context, 'object', modeLabels['object']!, contrastColor),
+                  _modeButton(context, 'clothing', modeLabels['clothing']!, contrastColor),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            Expanded(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: contrastColor, width: 4),
+                  boxShadow: hc ? const <BoxShadow>[] : AppStyle.cardShadow(false),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: _isInitialized
+                      ? _buildCameraPreview()
+                      : const Center(child: CircularProgressIndicator()),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              child: SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton.icon(
+                  onPressed: _isProcessing ? null : _captureAndRecognize,
+                  icon: const Icon(Icons.camera_alt, size: 28),
+                  label: Text('camera.capture'.tr()),
+                ),
+              ),
+            ),
+          ],
         ),
-        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
-      ),
-      body: Column(
-        children: [
-          const SizedBox(height: 12),
-
-          // ✅ КОПЧИЊА ВО ЕДЕН РЕД (FIX)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Row(
-              children: [
-                _modeButton(context, 'currency', modeLabels['currency']!, contrastColor),
-                _modeButton(context, 'color', modeLabels['color']!, contrastColor),
-                _modeButton(context, 'object', modeLabels['object']!, contrastColor),
-                _modeButton(context, 'clothing', modeLabels['clothing']!, contrastColor),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: contrastColor, width: 4),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: _isInitialized
-                    ? _buildCameraPreview()
-                    : const Center(child: CircularProgressIndicator()),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-            child: SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton.icon(
-                onPressed: _isProcessing ? null : _captureAndRecognize,
-                icon: const Icon(Icons.camera_alt, size: 28),
-                label: Text('camera.capture'.tr()),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

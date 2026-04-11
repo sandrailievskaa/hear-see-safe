@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
 import 'package:hear_and_see_safe/utils/vibration_utils.dart';
+import 'package:hear_and_see_safe/widgets/game_screen_chrome.dart';
 
 /// Приказна – твој избор: слушаш кратка приказна, избираш што ќе се случи понатаму, слушаш исходот.
 /// Образовно за фантазија и одлучување.
@@ -138,19 +139,12 @@ class _StoryChoicesScreenState extends State<StoryChoicesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = AccessibilityUtils.getBackgroundColor(context);
     final contrastColor = AccessibilityUtils.getContrastColor(context);
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        title: Text(
-          'features.story_choices'.tr(),
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: contrastColor),
-        ),
-        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
-      ),
-      body: SafeArea(
+    return GameScreenChrome(
+      accent: const Color(0xFF0F766E),
+      title: 'features.story_choices'.tr(),
+      child: SafeArea(
         child: Column(
           children: [
             Padding(
@@ -158,7 +152,7 @@ class _StoryChoicesScreenState extends State<StoryChoicesScreen> {
               child: Text(
                 'story.what_next'.tr(),
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: contrastColor),
+                style: GameTypography.heading(context, contrastColor, 20),
               ),
             ),
             if (!_showingOutcome) ...[
@@ -222,7 +216,7 @@ class _StoryChoicesScreenState extends State<StoryChoicesScreen> {
                     children: [
                       Text(
                         'story.the_end'.tr(),
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: contrastColor),
+                        style: GameTypography.heading(context, contrastColor, 24),
                       ),
                       const SizedBox(height: 32),
                       Semantics(
@@ -232,12 +226,12 @@ class _StoryChoicesScreenState extends State<StoryChoicesScreen> {
                           icon: const Icon(Icons.replay),
                           label: Text('story.play_again'.tr()),
                           onPressed: _restart,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                          backgroundColor: AccessibilityUtils.getPrimaryButtonBackground(context),
-                          foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                            backgroundColor: AccessibilityUtils.getPrimaryButtonBackground(context),
+                            foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
+                          ),
                         ),
-                      ),
                       ),
                     ],
                   ),

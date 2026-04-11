@@ -10,6 +10,7 @@ import '../services/voice_assistant_service.dart';
 import '../voice_system/application/language_manager.dart';
 import '../utils/accessibility_utils.dart';
 import '../theme/app_style.dart';
+import '../widgets/ambient_background.dart';
 
 class LanguageSelectionScreen extends StatelessWidget {
   const LanguageSelectionScreen({super.key});
@@ -87,115 +88,121 @@ class LanguageSelectionScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(gradient: AppStyle.welcomeBackground),
-        child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final maxWidth = constraints.maxWidth > 480 ? 480.0 : constraints.maxWidth;
-              return Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: maxWidth),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const SizedBox(height: 12),
-                        Text(
-                          'app.title'.tr(),
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.lexend(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                            height: 1.15,
-                            letterSpacing: -0.8,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black.withValues(alpha: 0.2),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Container(
+            decoration: const BoxDecoration(gradient: AppStyle.welcomeBackground),
+          ),
+          const Positioned.fill(
+            child: AmbientBackground(variant: AmbientVariant.welcome),
+          ),
+          SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final maxWidth = constraints.maxWidth > 480 ? 480.0 : constraints.maxWidth;
+                return Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: maxWidth),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const SizedBox(height: 12),
+                          Text(
+                            'app.title'.tr(),
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.lexend(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              height: 1.15,
+                              letterSpacing: -0.8,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'language.welcome'.tr(),
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.lexend(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            height: 1.4,
-                            color: Colors.white.withValues(alpha: 0.92),
+                          const SizedBox(height: 12),
+                          Text(
+                            'language.welcome'.tr(),
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.lexend(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              height: 1.4,
+                              color: Colors.white.withValues(alpha: 0.92),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '👂  ·  👁️  ·  🙌',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 22,
-                            color: Colors.white.withValues(alpha: 0.85),
+                          const SizedBox(height: 8),
+                          Text(
+                            '👂  ·  👁️  ·  🙌',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 22,
+                              color: Colors.white.withValues(alpha: 0.85),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 32),
-                        _voiceAssistantCard(context, voiceAssistant, highContrast: false),
-                        const SizedBox(height: 28),
-                        Text(
-                          'language.choose'.tr(),
-                          style: GoogleFonts.lexend(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 1.2,
-                            color: Colors.white.withValues(alpha: 0.8),
+                          const SizedBox(height: 32),
+                          _voiceAssistantCard(context, voiceAssistant, highContrast: false),
+                          const SizedBox(height: 28),
+                          Text(
+                            'language.choose'.tr(),
+                            style: GoogleFonts.lexend(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 1.2,
+                              color: Colors.white.withValues(alpha: 0.8),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 14),
-                        _languageRow(
-                          context: context,
-                          code: 'MK',
-                          name: 'Македонски',
-                          locale: const Locale('mk', 'MK'),
-                          langCode: 'mk',
-                          accent: const Color(0xFFFFB800),
-                          voiceAssistant: voiceAssistant,
-                          highContrast: false,
-                        ),
-                        const SizedBox(height: 14),
-                        _languageRow(
-                          context: context,
-                          code: 'EN',
-                          name: 'English',
-                          locale: const Locale('en', 'US'),
-                          langCode: 'en',
-                          accent: const Color(0xFF38BDF8),
-                          voiceAssistant: voiceAssistant,
-                          highContrast: false,
-                        ),
-                        const SizedBox(height: 14),
-                        _languageRow(
-                          context: context,
-                          code: 'SQ',
-                          name: 'Shqip',
-                          locale: const Locale('sq', 'AL'),
-                          langCode: 'sq',
-                          accent: const Color(0xFFFB7185),
-                          voiceAssistant: voiceAssistant,
-                          highContrast: false,
-                        ),
-                        const SizedBox(height: 32),
-                      ],
+                          const SizedBox(height: 14),
+                          _languageRow(
+                            context: context,
+                            code: 'MK',
+                            name: 'Македонски',
+                            locale: const Locale('mk', 'MK'),
+                            langCode: 'mk',
+                            accent: const Color(0xFFFFB800),
+                            voiceAssistant: voiceAssistant,
+                            highContrast: false,
+                          ),
+                          const SizedBox(height: 14),
+                          _languageRow(
+                            context: context,
+                            code: 'EN',
+                            name: 'English',
+                            locale: const Locale('en', 'US'),
+                            langCode: 'en',
+                            accent: const Color(0xFF38BDF8),
+                            voiceAssistant: voiceAssistant,
+                            highContrast: false,
+                          ),
+                          const SizedBox(height: 14),
+                          _languageRow(
+                            context: context,
+                            code: 'SQ',
+                            name: 'Shqip',
+                            locale: const Locale('sq', 'AL'),
+                            langCode: 'sq',
+                            accent: const Color(0xFFFB7185),
+                            voiceAssistant: voiceAssistant,
+                            highContrast: false,
+                          ),
+                          const SizedBox(height: 32),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

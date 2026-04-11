@@ -5,7 +5,9 @@ import 'package:hear_and_see_safe/providers/app_state_provider.dart';
 import 'package:hear_and_see_safe/voice_system/application/language_manager.dart';
 import 'package:hear_and_see_safe/providers/accessibility_provider.dart';
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
+import 'package:hear_and_see_safe/theme/app_style.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
+import 'package:hear_and_see_safe/widgets/game_screen_chrome.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -27,23 +29,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     // Rebuild when locale changes so "Пристапност" / High Contrast / Large Text labels update immediately.
     final locale = context.locale;
-    final backgroundColor = AccessibilityUtils.getBackgroundColor(context);
-    final contrastColor = AccessibilityUtils.getContrastColor(context);
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        title: Text(
-          'settings.title'.tr(),
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: contrastColor,
-          ),
-        ),
-        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
-      ),
-      body: SafeArea(
+    return GameScreenChrome(
+      accent: AppStyle.brandTeal,
+      title: 'settings.title'.tr(),
+      titleFontSize: 26,
+      child: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(

@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
+import 'package:hear_and_see_safe/theme/app_style.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
 import 'package:hear_and_see_safe/utils/vibration_utils.dart';
+import 'package:hear_and_see_safe/widgets/game_screen_chrome.dart';
 import 'package:audioplayers/audioplayers.dart';
 
 /// Меморија на мелодија (Simon Says со звуци): слушаш низа од звуци, потоа повторуваш со тап.
@@ -173,26 +175,20 @@ class _MelodyMemoryScreenState extends State<MelodyMemoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = AccessibilityUtils.getBackgroundColor(context);
     final contrastColor = AccessibilityUtils.getContrastColor(context);
+    final hc = AccessibilityUtils.isHighContrast(context);
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        title: Text(
-          'features.melody_memory'.tr(),
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: contrastColor),
-        ),
-        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
-      ),
-      body: SafeArea(
+    return GameScreenChrome(
+      accent: const Color(0xFF9333EA),
+      title: 'features.melody_memory'.tr(),
+      child: SafeArea(
         child: Column(
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
                 'melody.level'.tr(args: [_level.toString()]),
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: contrastColor),
+                style: GameTypography.heading(context, contrastColor, 20),
               ),
             ),
             Expanded(
@@ -204,11 +200,11 @@ class _MelodyMemoryScreenState extends State<MelodyMemoryScreen> {
                   crossAxisSpacing: 20,
                   childAspectRatio: 1.1,
                   children: List.generate(4, (index) {
-                    final colors = [
-                      Colors.blue,
-                      Colors.orange,
-                      Colors.green,
-                      Colors.teal,
+                    const colors = [
+                      Color(0xFF6366F1),
+                      Color(0xFFF59E0B),
+                      Color(0xFF10B981),
+                      Color(0xFF8B5CF6),
                     ];
                     final labels = [
                       'melody.sound1'.tr(),
@@ -216,23 +212,41 @@ class _MelodyMemoryScreenState extends State<MelodyMemoryScreen> {
                       'melody.sound3'.tr(),
                       'melody.sound4'.tr(),
                     ];
+                    final c = colors[index];
                     return Semantics(
                       label: '${labels[index]}. ${'melody.tap_to_repeat'.tr()}',
                       button: true,
                       child: Material(
-                        color: colors[index].withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(20),
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(22),
                         child: InkWell(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(22),
                           onTap: () => _onButtonTap(index),
-                          child: Center(
-                            child: Text(
-                              labels[index],
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: AccessibilityUtils.getPrimaryButtonForeground(context),
+                          child: Ink(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(22),
+                              gradient: hc
+                                  ? null
+                                  : LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        c,
+                                        Color.lerp(c, Colors.white, 0.22)!,
+                                      ],
+                                    ),
+                              color: hc ? c.withValues(alpha: 0.9) : null,
+                              boxShadow: hc ? const <BoxShadow>[] : AppStyle.cardShadow(false),
+                            ),
+                            child: Center(
+                              child: Text(
+                                labels[index],
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: AccessibilityUtils.getPrimaryButtonForeground(context),
+                                ),
                               ),
                             ),
                           ),

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
+import 'package:hear_and_see_safe/theme/app_style.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
+import 'package:hear_and_see_safe/widgets/game_screen_chrome.dart';
 
 /// Модул за родители: учење на брајова азбука за поддршка на слепи деца.
 /// Едноставен приказ на букви и броеви со брајова нотација.
@@ -54,19 +56,12 @@ class _BrailleLearningScreenState extends State<BrailleLearningScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bg = AccessibilityUtils.getBackgroundColor(context);
     final contrast = AccessibilityUtils.getContrastColor(context);
 
-    return Scaffold(
-      backgroundColor: bg,
-      appBar: AppBar(
-        title: Text(
-          'braille.title'.tr(),
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: contrast),
-        ),
-        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
-      ),
-      body: SafeArea(
+    return GameScreenChrome(
+      accent: const Color(0xFF4F46E5),
+      title: 'braille.title'.tr(),
+      child: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -74,20 +69,20 @@ class _BrailleLearningScreenState extends State<BrailleLearningScreen> {
             children: [
               Text(
                 'braille.for_parents'.tr(),
-                style: TextStyle(fontSize: 18, color: contrast),
+                style: GameTypography.body(context, contrast, 18),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
               Text(
                 'braille.letters'.tr(),
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: contrast),
+                style: GameTypography.heading(context, contrast, 20),
               ),
               const SizedBox(height: 12),
               _buildBrailleGrid(_brailleLetters, contrast),
               const SizedBox(height: 24),
               Text(
                 'braille.numbers'.tr(),
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: contrast),
+                style: GameTypography.heading(context, contrast, 20),
               ),
               const SizedBox(height: 12),
               _buildBrailleGrid(_brailleNumbers, contrast),
@@ -138,6 +133,7 @@ class _BrailleCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final buttonSize = AccessibilityUtils.getButtonSize(context);
+    final hc = AccessibilityUtils.isHighContrast(context);
 
     return Semantics(
       label: 'braille.cell'.tr(args: [character]),
@@ -151,8 +147,10 @@ class _BrailleCell extends StatelessWidget {
             width: 72 * buttonSize,
             padding: EdgeInsets.all(12 * buttonSize),
             decoration: BoxDecoration(
-              border: Border.all(color: contrastColor, width: 2),
-              borderRadius: BorderRadius.circular(16),
+              color: hc ? Colors.transparent : Colors.white.withValues(alpha: 0.95),
+              border: Border.all(color: contrastColor, width: hc ? 2 : 2.5),
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: hc ? const <BoxShadow>[] : AppStyle.cardShadow(false),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,

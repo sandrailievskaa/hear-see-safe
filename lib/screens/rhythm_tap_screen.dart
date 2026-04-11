@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
 import 'package:hear_and_see_safe/utils/vibration_utils.dart';
+import 'package:hear_and_see_safe/widgets/game_screen_chrome.dart';
 import 'package:audioplayers/audioplayers.dart';
 
 /// Ритмичка игра: слушаш N удари, потоа тапаш N пати во ритам. Учи ритам и броење.
@@ -69,7 +70,7 @@ class _RhythmTapScreenState extends State<RhythmTapScreen> {
 
     for (int i = 0; i < _beatsToPlay && mounted; i++) {
       await _playBeat();
-      await Future.delayed(Duration(milliseconds: _beatMs));
+      await Future.delayed(const Duration(milliseconds: _beatMs));
     }
 
     if (!mounted) return;
@@ -137,19 +138,13 @@ class _RhythmTapScreenState extends State<RhythmTapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = AccessibilityUtils.getBackgroundColor(context);
     final contrastColor = AccessibilityUtils.getContrastColor(context);
+    final hc = AccessibilityUtils.isHighContrast(context);
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        title: Text(
-          'features.rhythm_tap'.tr(),
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: contrastColor),
-        ),
-        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
-      ),
-      body: SafeArea(
+    return GameScreenChrome(
+      accent: const Color(0xFFE11D48),
+      title: 'features.rhythm_tap'.tr(),
+      child: SafeArea(
         child: Column(
           children: [
             Padding(
@@ -159,7 +154,7 @@ class _RhythmTapScreenState extends State<RhythmTapScreen> {
                     ? 'rhythm.listen'.tr(args: [_beatsToPlay.toString()])
                     : 'rhythm.tap_count'.tr(args: [_userTaps.toString(), _beatsToPlay.toString()]),
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: contrastColor),
+                style: GameTypography.heading(context, contrastColor, 20),
               ),
             ),
             Expanded(
@@ -174,9 +169,19 @@ class _RhythmTapScreenState extends State<RhythmTapScreen> {
                       margin: const EdgeInsets.all(32),
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: _tapPhase
-                            ? const Color(0xFFE91E63).withOpacity(0.3)
-                            : (AccessibilityUtils.isHighContrast(context) ? const Color(0xFF333333) : Colors.grey.withOpacity(0.2)),
+                        gradient: _tapPhase && !hc
+                            ? LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  const Color(0xFFFB7185).withValues(alpha: 0.42),
+                                  const Color(0xFFF472B6).withValues(alpha: 0.22),
+                                ],
+                              )
+                            : null,
+                        color: !_tapPhase || hc
+                            ? (hc ? const Color(0xFF333333) : Colors.grey.withValues(alpha: 0.2))
+                            : null,
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
                           color: contrastColor,
@@ -186,11 +191,7 @@ class _RhythmTapScreenState extends State<RhythmTapScreen> {
                       child: Center(
                         child: Text(
                           _tapPhase ? 'rhythm.tap_here'.tr() : 'rhythm.wait'.tr(),
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: contrastColor,
-                          ),
+                          style: GameTypography.heading(context, contrastColor, 28),
                         ),
                       ),
                     ),

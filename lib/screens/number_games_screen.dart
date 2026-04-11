@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
 import 'package:hear_and_see_safe/utils/vibration_utils.dart';
+import 'package:hear_and_see_safe/widgets/game_screen_chrome.dart';
 
 class NumberGamesScreen extends StatefulWidget {
   const NumberGamesScreen({super.key});
@@ -15,6 +16,8 @@ class NumberGamesScreen extends StatefulWidget {
 }
 
 class _NumberGamesScreenState extends State<NumberGamesScreen> {
+  static const Color _moduleAccent = Color(0xFF059669);
+
   late VoiceAssistantService _voiceAssistant;
   final TextEditingController _inputController = TextEditingController();
   final FocusNode _inputFocusNode = FocusNode();
@@ -189,22 +192,12 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
     final backgroundColor = AccessibilityUtils.getBackgroundColor(context);
     final contrastColor = AccessibilityUtils.getContrastColor(context);
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        title: Text(
-          'number_games.title'.tr().isNotEmpty
-              ? 'number_games.title'.tr()
-              : 'features.number_games'.tr(),
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: contrastColor,
-          ),
-        ),
-        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
-      ),
-      body: SafeArea(
+    return GameScreenChrome(
+      accent: _moduleAccent,
+      title: 'number_games.title'.tr().isNotEmpty
+          ? 'number_games.title'.tr()
+          : 'features.number_games'.tr(),
+      child: SafeArea(
         child: Column(
           children: [
             Padding(
@@ -229,11 +222,7 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 'number_games.score'.tr(args: [_score.toString()]),
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: contrastColor,
-                ),
+                style: GameTypography.heading(context, contrastColor, 20),
               ),
             ),
             const SizedBox(height: 8),
@@ -250,26 +239,54 @@ class _NumberGamesScreenState extends State<NumberGamesScreen> {
 
   Widget _gameChip(BuildContext context, String game, String label, Color contrastColor) {
     final isActive = _currentGame == game;
+    final hc = AccessibilityUtils.isHighContrast(context);
     return Semantics(
       label: label,
       button: true,
       child: Material(
-        color: isActive ? AccessibilityUtils.getAccentColor(context) : AccessibilityUtils.getDisabledColor(context),
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(14),
         child: InkWell(
           onTap: () => _switchGame(game),
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            child: Center(
-              child: Text(
-                label,
-                style: TextStyle(
-                  color: AccessibilityUtils.getPrimaryButtonForeground(context),
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
+          borderRadius: BorderRadius.circular(14),
+          child: Ink(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              gradient: isActive && !hc
+                  ? LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        _moduleAccent,
+                        Color.lerp(_moduleAccent, const Color(0xFF6EE7B7), 0.45)!,
+                      ],
+                    )
+                  : null,
+              color: !isActive
+                  ? AccessibilityUtils.getDisabledColor(context)
+                  : (hc ? AccessibilityUtils.getAccentColor(context) : null),
+              boxShadow: isActive && !hc
+                  ? [
+                      BoxShadow(
+                        color: _moduleAccent.withValues(alpha: 0.32),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ]
+                  : const <BoxShadow>[],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Center(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: AccessibilityUtils.getPrimaryButtonForeground(context),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
               ),
             ),
           ),

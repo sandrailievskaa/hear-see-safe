@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
+import 'package:hear_and_see_safe/theme/app_style.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
 import 'package:hear_and_see_safe/utils/vibration_utils.dart';
+import 'package:hear_and_see_safe/widgets/game_screen_chrome.dart';
 
 /// Гласовен Понг: верзија на пинг-понг со звук. Топката се „слуша“ како се движи
 /// преку вибрации и глас — играчот допира на екранот во вистински момент за удар.
@@ -165,25 +166,15 @@ class _VoicePongScreenState extends State<VoicePongScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = AccessibilityUtils.getBackgroundColor(context);
     final contrastColor = AccessibilityUtils.getContrastColor(context);
+    final hc = AccessibilityUtils.isHighContrast(context);
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        title: Text(
-          'pong.title'.tr().isNotEmpty
-              ? 'pong.title'.tr()
-              : 'features.voice_pong'.tr(),
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: contrastColor,
-          ),
-        ),
-        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
-      ),
-      body: SafeArea(
+    return GameScreenChrome(
+      accent: const Color(0xFFD97706),
+      title: 'pong.title'.tr().isNotEmpty
+          ? 'pong.title'.tr()
+          : 'features.voice_pong'.tr(),
+      child: SafeArea(
         child: Column(
           children: [
             Padding(
@@ -193,18 +184,14 @@ class _VoicePongScreenState extends State<VoicePongScreen> {
                 children: [
                   Text(
                     'pong.score'.tr(args: [_score.toString()]),
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: contrastColor,
-                    ),
+                    style: GameTypography.heading(context, contrastColor, 20),
                   ),
                   Text(
                     'pong.misses'.tr(args: [_misses.toString()]),
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: _misses >= 2 ? const Color(0xFFFF4444) : contrastColor,
+                    style: GameTypography.heading(
+                      context,
+                      _misses >= 2 ? const Color(0xFFFF4444) : contrastColor,
+                      20,
                     ),
                   ),
                 ],
@@ -221,9 +208,10 @@ class _VoicePongScreenState extends State<VoicePongScreen> {
                     width: double.infinity,
                     margin: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
-                      color: AccessibilityUtils.isHighContrast(context) ? const Color(0xFF1A1A1A) : Colors.black87,
+                      color: hc ? const Color(0xFF1A1A1A) : Colors.black87,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: contrastColor, width: 4),
+                      boxShadow: hc ? const <BoxShadow>[] : AppStyle.cardShadow(false),
                     ),
                     child: Stack(
                       children: [
@@ -272,17 +260,17 @@ class _VoicePongScreenState extends State<VoicePongScreen> {
                           icon: Icon(_isPlaying ? Icons.stop : Icons.play_arrow),
                           label: Text(
                             _isPlaying ? 'pong.stop'.tr() : 'pong.start'.tr(),
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _isPlaying ? const Color(0xFFE53935) : const Color(0xFF4CAF50),
+                            foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
                           ),
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _isPlaying ? const Color(0xFFE53935) : const Color(0xFF4CAF50),
-                          foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
-                        ),
                       ),
-                    ),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -300,16 +288,16 @@ class _VoicePongScreenState extends State<VoicePongScreen> {
                           },
                           icon: const Icon(Icons.refresh),
                           label: Text('pong.restart'.tr()),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AccessibilityUtils.getPrimaryButtonBackground(context),
-                          foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
-                          textStyle: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AccessibilityUtils.getPrimaryButtonBackground(context),
+                            foregroundColor: AccessibilityUtils.getPrimaryButtonForeground(context),
+                            textStyle: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
-                    ),
                     ),
                   ),
                 ],

@@ -10,7 +10,15 @@
     "voice_assistant_ready": "Asistenti me zë është gati."
   },
   "home": {
-    "welcome": "Mirë se vini në Dëgjo dhe Shiko i Sigurt. Zgjidhni një funksion për të filluar."
+    "welcome": "Mirë se vini në Dëgjo dhe Shiko i Sigurt. Zgjidhni një funksion për të filluar.",
+    "hero_subtitle": "Mësim · tingull · siguri — i aksesueshëm për të gjithë",
+    "section_learn": "Mëso dhe eksploro",
+    "section_learn_hint": "Seksioni i mësimit. Pesë aktivitete më poshtë.",
+    "section_sound": "Dëgjo dhe luaj",
+    "section_sound_hint": "Seksioni i tingullit dhe lojërave. Gjashtë aktivitete më poshtë.",
+    "section_safe": "Qëndro i sigurt në internet",
+    "section_safe_hint": "Seksioni i sigurisë. Një aktivitet më poshtë.",
+    "fab_semantics": "Komandë me zë. Prekni dhe thuaj ku doni të shkoni, për shembull cilësimet ose libri me figura."
   },
   "voice": {
     "speak_command": "Thuaj një komandë. Për shembull: Braille, libër fotosh, lojëra me numra, cilësimet.",
