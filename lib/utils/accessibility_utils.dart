@@ -35,7 +35,7 @@ class AccessibilityUtils {
     if (isHighContrast) {
       return lightColor ?? _HighContrastColors.text;
     }
-    return darkColor ?? const Color(0xFF212121);
+    return darkColor ?? const Color(0xFF0F172A);
   }
 
   static Color getBackgroundColor(BuildContext context) {
@@ -45,22 +45,22 @@ class AccessibilityUtils {
     if (isHighContrast) {
       return _HighContrastColors.background;
     }
-    return const Color(0xFFF5F5F5);
+    return const Color(0xFFF1F5F9);
   }
 
   /// Позадина за AppBar – црна во режим висок контраст
   static Color getAppBarBackgroundColor(BuildContext context) {
-    return isHighContrast(context) ? _HighContrastColors.background : const Color(0xFF2196F3);
+    return isHighContrast(context) ? _HighContrastColors.background : const Color(0xFF0F766E);
   }
 
   /// Боја за акценти (чекмарки, икони) – жолта во HC за максимална видливост
   static Color getAccentColor(BuildContext context) {
-    return isHighContrast(context) ? _HighContrastColors.accent : const Color(0xFF2196F3);
+    return isHighContrast(context) ? _HighContrastColors.accent : const Color(0xFF0D9488);
   }
 
   /// Позадина за карти – црна со бели рабови во HC
   static Color getCardBackgroundColor(BuildContext context) {
-    return isHighContrast(context) ? _HighContrastColors.cardBackground : const Color(0xFFF5F5F5);
+    return isHighContrast(context) ? _HighContrastColors.cardBackground : Colors.white;
   }
 
   /// Раб за карти – бел 2px во HC, во нормално contrastColor 3px
@@ -76,12 +76,12 @@ class AccessibilityUtils {
   static Color getSecondaryTextColor(BuildContext context) {
     return isHighContrast(context)
         ? _HighContrastColors.text
-        : const Color(0xFF424242);
+        : const Color(0xFF475569);
   }
 
   /// Позадина за примарни копчиња
   static Color getPrimaryButtonBackground(BuildContext context) {
-    return isHighContrast(context) ? _HighContrastColors.buttonBackground : const Color(0xFF2196F3);
+    return isHighContrast(context) ? _HighContrastColors.buttonBackground : const Color(0xFF0F766E);
   }
 
   /// Текст/икони на примарни копчиња

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hear_and_see_safe/services/voice_assistant_service.dart';
 import 'package:hear_and_see_safe/providers/app_state_provider.dart';
 import 'package:hear_and_see_safe/voice_system/application/language_manager.dart';
@@ -8,6 +9,7 @@ import 'package:hear_and_see_safe/voice_system/application/voice_command_orchest
 import 'package:hear_and_see_safe/voice_system/application/voice_ui_strings.dart';
 import 'package:hear_and_see_safe/voice_system/presentation/voice_intent_dispatcher.dart';
 import 'package:hear_and_see_safe/utils/accessibility_utils.dart';
+import 'package:hear_and_see_safe/theme/app_style.dart';
 import 'package:hear_and_see_safe/screens/braille_learning_screen.dart';
 import 'package:hear_and_see_safe/screens/picture_book_screen.dart';
 import 'package:hear_and_see_safe/screens/number_games_screen.dart';
@@ -22,6 +24,22 @@ import 'package:hear_and_see_safe/screens/rhythm_tap_screen.dart';
 import 'package:hear_and_see_safe/screens/story_choices_screen.dart';
 import 'package:hear_and_see_safe/screens/settings_screen.dart';
 
+class _HomeFeature {
+  const _HomeFeature({
+    required this.icon,
+    required this.titleKey,
+    required this.descKey,
+    required this.accent,
+    required this.screen,
+  });
+
+  final IconData icon;
+  final String titleKey;
+  final String descKey;
+  final Color accent;
+  final Widget screen;
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -32,6 +50,93 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late VoiceAssistantService _voiceAssistant;
   bool _isListening = false;
+
+  static final List<_HomeFeature> _features = [
+    _HomeFeature(
+      icon: Icons.grid_view_rounded,
+      titleKey: 'features.braille',
+      descKey: 'features.braille_desc',
+      accent: Color(0xFF1D4ED8),
+      screen: const BrailleLearningScreen(),
+    ),
+    _HomeFeature(
+      icon: Icons.auto_stories_rounded,
+      titleKey: 'features.picture_book',
+      descKey: 'features.picture_book_desc',
+      accent: Color(0xFF2563EB),
+      screen: const PictureBookScreen(),
+    ),
+    _HomeFeature(
+      icon: Icons.calculate_rounded,
+      titleKey: 'features.number_games',
+      descKey: 'features.number_games_desc',
+      accent: Color(0xFF059669),
+      screen: const NumberGamesScreen(),
+    ),
+    _HomeFeature(
+      icon: Icons.photo_camera_rounded,
+      titleKey: 'features.camera_recognition',
+      descKey: 'features.camera_recognition_desc',
+      accent: Color(0xFFD97706),
+      screen: const CameraRecognitionScreen(),
+    ),
+    _HomeFeature(
+      icon: Icons.explore_rounded,
+      titleKey: 'features.spatial_orientation',
+      descKey: 'features.spatial_orientation_desc',
+      accent: Color(0xFF7C3AED),
+      screen: const SpatialOrientationScreen(),
+    ),
+    _HomeFeature(
+      icon: Icons.hearing_rounded,
+      titleKey: 'features.sound_identification',
+      descKey: 'features.sound_identification_desc',
+      accent: Color(0xFF0D9488),
+      screen: const SoundIdentificationScreen(),
+    ),
+    _HomeFeature(
+      icon: Icons.shield_rounded,
+      titleKey: 'features.cyber_safety',
+      descKey: 'features.cyber_safety_desc',
+      accent: Color(0xFFDC2626),
+      screen: const CyberSafetyScreen(),
+    ),
+    _HomeFeature(
+      icon: Icons.psychology_rounded,
+      titleKey: 'features.sound_memory',
+      descKey: 'features.sound_memory_desc',
+      accent: Color(0xFFDB2777),
+      screen: const SoundMemoryScreen(),
+    ),
+    _HomeFeature(
+      icon: Icons.sports_esports_rounded,
+      titleKey: 'features.voice_pong',
+      descKey: 'features.voice_pong_desc',
+      accent: Color(0xFFCA8A04),
+      screen: const VoicePongScreen(),
+    ),
+    _HomeFeature(
+      icon: Icons.piano_rounded,
+      titleKey: 'features.melody_memory',
+      descKey: 'features.melody_memory_desc',
+      accent: Color(0xFF9333EA),
+      screen: const MelodyMemoryScreen(),
+    ),
+    _HomeFeature(
+      icon: Icons.graphic_eq_rounded,
+      titleKey: 'features.rhythm_tap',
+      descKey: 'features.rhythm_tap_desc',
+      accent: Color(0xFFE11D48),
+      screen: const RhythmTapScreen(),
+    ),
+    _HomeFeature(
+      icon: Icons.menu_book_rounded,
+      titleKey: 'features.story_choices',
+      descKey: 'features.story_choices_desc',
+      accent: Color(0xFF0F766E),
+      screen: const StoryChoicesScreen(),
+    ),
+  ];
 
   @override
   void initState() {
@@ -105,24 +210,45 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final hc = AccessibilityUtils.isHighContrast(context);
     final backgroundColor = AccessibilityUtils.getBackgroundColor(context);
     final contrastColor = AccessibilityUtils.getContrastColor(context);
+    final secondaryColor = AccessibilityUtils.getSecondaryTextColor(context);
+    final buttonSize = AccessibilityUtils.getButtonSize(context);
+    final fabBg = _isListening
+        ? AccessibilityUtils.getDisabledColor(context)
+        : (hc ? AccessibilityUtils.getPrimaryButtonBackground(context) : const Color(0xFF115E59));
+    final fabFg = AccessibilityUtils.getPrimaryButtonForeground(context);
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: hc ? backgroundColor : Colors.transparent,
+      extendBody: false,
       appBar: AppBar(
+        centerTitle: false,
+        elevation: hc ? 0 : 0,
+        scrolledUnderElevation: 0,
+        backgroundColor: hc ? AccessibilityUtils.getAppBarBackgroundColor(context) : Colors.transparent,
+        flexibleSpace: hc
+            ? null
+            : Container(
+                decoration: const BoxDecoration(gradient: AppStyle.appBarGradient),
+              ),
         title: Text(
           'app.title'.tr(),
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: contrastColor,
+          style: GoogleFonts.lexend(
+            fontSize: 22 * buttonSize,
+            fontWeight: FontWeight.w700,
+            color: hc ? contrastColor : Colors.white,
+            letterSpacing: -0.5,
           ),
         ),
-        backgroundColor: AccessibilityUtils.getAppBarBackgroundColor(context),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings, size: 32),
+            icon: Icon(Icons.settings_rounded, size: 28 * buttonSize),
+            color: hc ? contrastColor : Colors.white,
+            style: IconButton.styleFrom(
+              backgroundColor: hc ? null : Colors.white.withValues(alpha: 0.18),
+            ),
             onPressed: () {
               _navigateToScreen(
                 const SettingsScreen(),
@@ -131,164 +257,108 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             tooltip: 'settings.title'.tr(),
           ),
+          const SizedBox(width: 8),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _isListening ? null : _startVoiceCommand,
-        icon: Icon(_isListening ? Icons.mic : Icons.mic_none),
-        label: Text(_isListening ? 'voice.listening'.tr() : 'voice.tap_to_speak'.tr()),
-        backgroundColor: _isListening ? AccessibilityUtils.getDisabledColor(context) : AccessibilityUtils.getAppBarBackgroundColor(context),
+      floatingActionButton: Material(
+        elevation: hc ? 0 : 8,
+        shadowColor: const Color(0xFF115E59).withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          onTap: _isListening ? null : _startVoiceCommand,
+          borderRadius: BorderRadius.circular(20),
+          child: Ink(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: _isListening || hc
+                  ? null
+                  : const LinearGradient(
+                      colors: [Color(0xFF115E59), Color(0xFF0D9488)],
+                    ),
+              color: (_isListening || hc) ? fabBg : null,
+              border: hc
+                  ? Border.all(color: contrastColor, width: 2)
+                  : null,
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: 22 * buttonSize,
+                vertical: 16 * buttonSize,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _isListening ? Icons.mic_rounded : Icons.mic_none_rounded,
+                    color: fabFg,
+                    size: 26 * buttonSize,
+                  ),
+                  SizedBox(width: 10 * buttonSize),
+                  Text(
+                    _isListening ? 'voice.listening'.tr() : 'voice.tap_to_speak'.tr(),
+                    style: GoogleFonts.lexend(
+                      fontSize: 16 * buttonSize,
+                      fontWeight: FontWeight.w700,
+                      color: fabFg,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildFeatureCard(
-                context,
-                icon: Icons.grid_view,
-                title: 'features.braille'.tr(),
-                description: 'features.braille_desc'.tr(),
-                color: const Color(0xFF1565C0),
-                onTap: () => _navigateToScreen(
-                  const BrailleLearningScreen(),
-                  'features.braille'.tr(),
+      body: Container(
+        width: double.infinity,
+        decoration: hc
+            ? BoxDecoration(color: backgroundColor)
+            : const BoxDecoration(gradient: AppStyle.homeBodyGradient),
+        child: SafeArea(
+          top: false,
+          child: ListView.builder(
+            padding: EdgeInsets.fromLTRB(20, 12, 20, 100),
+            itemCount: _features.length + 1,
+            itemBuilder: (context, index) {
+              if (index == 0) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 20, top: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'home.welcome'.tr(),
+                        style: GoogleFonts.lexend(
+                          fontSize: 15 * buttonSize,
+                          fontWeight: FontWeight.w500,
+                          height: 1.45,
+                          color: secondaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              final f = _features[index - 1];
+              final title = f.titleKey.tr();
+              final desc = f.descKey.tr();
+              final hint = 'features.tap_to_open'.tr();
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 14),
+                child: _buildFeatureCard(
+                  context,
+                  icon: f.icon,
+                  title: title,
+                  description: desc,
+                  accent: f.accent,
+                  buttonSize: buttonSize,
+                  contrastColor: contrastColor,
+                  secondaryColor: secondaryColor,
+                  highContrast: hc,
+                  semanticLabel: '$title. $desc. $hint',
+                  onTap: () => _navigateToScreen(f.screen, title),
                 ),
-              ),
-              const SizedBox(height: 16),
-              _buildFeatureCard(
-                context,
-                icon: Icons.book,
-                title: 'features.picture_book'.tr(),
-                description: 'features.picture_book_desc'.tr(),
-                color: Colors.blue,
-                onTap: () => _navigateToScreen(
-                  const PictureBookScreen(),
-                  'features.picture_book'.tr(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildFeatureCard(
-                context,
-                icon: Icons.calculate,
-                title: 'features.number_games'.tr(),
-                description: 'features.number_games_desc'.tr(),
-                color: Colors.green,
-                onTap: () => _navigateToScreen(
-                  const NumberGamesScreen(),
-                  'features.number_games'.tr(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildFeatureCard(
-                context,
-                icon: Icons.camera_alt,
-                title: 'features.camera_recognition'.tr(),
-                description: 'features.camera_recognition_desc'.tr(),
-                color: Colors.orange,
-                onTap: () => _navigateToScreen(
-                  const CameraRecognitionScreen(),
-                  'features.camera_recognition'.tr(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildFeatureCard(
-                context,
-                icon: Icons.explore,
-                title: 'features.spatial_orientation'.tr(),
-                description: 'features.spatial_orientation_desc'.tr(),
-                color: Colors.purple,
-                onTap: () => _navigateToScreen(
-                  const SpatialOrientationScreen(),
-                  'features.spatial_orientation'.tr(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildFeatureCard(
-                context,
-                icon: Icons.hearing,
-                title: 'features.sound_identification'.tr(),
-                description: 'features.sound_identification_desc'.tr(),
-                color: Colors.teal,
-                onTap: () => _navigateToScreen(
-                  const SoundIdentificationScreen(),
-                  'features.sound_identification'.tr(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildFeatureCard(
-                context,
-                icon: Icons.security,
-                title: 'features.cyber_safety'.tr(),
-                description: 'features.cyber_safety_desc'.tr(),
-                color: Colors.red,
-                onTap: () => _navigateToScreen(
-                  const CyberSafetyScreen(),
-                  'features.cyber_safety'.tr(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildFeatureCard(
-                context,
-                icon: Icons.memory,
-                title: 'features.sound_memory'.tr(),
-                description: 'features.sound_memory_desc'.tr(),
-                color: Colors.pink,
-                onTap: () => _navigateToScreen(
-                  const SoundMemoryScreen(),
-                  'features.sound_memory'.tr(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildFeatureCard(
-                context,
-                icon: Icons.sports_esports,
-                title: 'features.voice_pong'.tr(),
-                description: 'features.voice_pong_desc'.tr(),
-                color: Colors.amber,
-                onTap: () => _navigateToScreen(
-                  const VoicePongScreen(),
-                  'features.voice_pong'.tr(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildFeatureCard(
-                context,
-                icon: Icons.music_note,
-                title: 'features.melody_memory'.tr(),
-                description: 'features.melody_memory_desc'.tr(),
-                color: const Color(0xFF9C27B0),
-                onTap: () => _navigateToScreen(
-                  const MelodyMemoryScreen(),
-                  'features.melody_memory'.tr(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildFeatureCard(
-                context,
-                icon: Icons.graphic_eq,
-                title: 'features.rhythm_tap'.tr(),
-                description: 'features.rhythm_tap_desc'.tr(),
-                color: const Color(0xFFE91E63),
-                onTap: () => _navigateToScreen(
-                  const RhythmTapScreen(),
-                  'features.rhythm_tap'.tr(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildFeatureCard(
-                context,
-                icon: Icons.menu_book,
-                title: 'features.story_choices'.tr(),
-                description: 'features.story_choices_desc'.tr(),
-                color: const Color(0xFF009688),
-                onTap: () => _navigateToScreen(
-                  const StoryChoicesScreen(),
-                  'features.story_choices'.tr(),
-                ),
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),
@@ -300,72 +370,117 @@ class _HomeScreenState extends State<HomeScreen> {
     required IconData icon,
     required String title,
     required String description,
-    required Color color,
+    required Color accent,
+    required double buttonSize,
+    required Color contrastColor,
+    required Color secondaryColor,
+    required bool highContrast,
+    required String semanticLabel,
     required VoidCallback onTap,
   }) {
-    final buttonSize = AccessibilityUtils.getButtonSize(context);
-    final contrastColor = AccessibilityUtils.getContrastColor(context);
+    final cardBg = AccessibilityUtils.getCardBackgroundColor(context);
+    final borderSide = AccessibilityUtils.getCardBorder(context, fallbackColor: contrastColor);
+    final borderColor = highContrast ? borderSide.color : const Color(0xFFE2E8F0);
+    final borderW = highContrast ? borderSide.width : 1.0;
 
-    final hint = 'features.tap_to_open'.tr().isNotEmpty ? 'features.tap_to_open'.tr() : 'Tap to open';
     return Semantics(
-      label: '$title. $description. $hint',
+      label: semanticLabel,
       button: true,
-        child: Card(
-        elevation: AccessibilityUtils.isHighContrast(context) ? 0 : 8,
-        color: AccessibilityUtils.getCardBackgroundColor(context),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: AccessibilityUtils.getCardBorder(context, fallbackColor: contrastColor),
-        ),
+      child: Material(
+        color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            gradient: LinearGradient(
-              colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+          borderRadius: BorderRadius.circular(22),
+          child: Ink(
+            decoration: BoxDecoration(
+              color: cardBg,
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: borderColor,
+                width: borderW,
+              ),
+              boxShadow: AppStyle.cardShadow(highContrast),
             ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Icon(
-                  icon,
-                  size: 40 * buttonSize,
-                  color: AccessibilityUtils.getPrimaryButtonForeground(context),
-                ),
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 22 * buttonSize,
-                    fontWeight: FontWeight.bold,
-                    color: contrastColor,
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(
+                    width: 5,
+                    decoration: BoxDecoration(
+                      color: accent,
+                      borderRadius: const BorderRadius.horizontal(left: Radius.circular(20)),
+                    ),
                   ),
-                ),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.all(18 * buttonSize),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(14 * buttonSize),
+                            decoration: BoxDecoration(
+                              color: highContrast
+                                  ? AccessibilityUtils.getPrimaryButtonBackground(context)
+                                  : accent.withValues(alpha: 0.14),
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            child: Icon(
+                              icon,
+                              size: 32 * buttonSize,
+                              color: highContrast
+                                  ? AccessibilityUtils.getPrimaryButtonForeground(context)
+                                  : accent,
+                            ),
+                          ),
+                          SizedBox(width: 16 * buttonSize),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  title,
+                                  style: GoogleFonts.lexend(
+                                    fontSize: 18 * buttonSize,
+                                    fontWeight: FontWeight.w700,
+                                    height: 1.2,
+                                    color: contrastColor,
+                                  ),
+                                ),
+                                SizedBox(height: 6 * buttonSize),
+                                Text(
+                                  description,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.lexend(
+                                    fontSize: 14 * buttonSize,
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.35,
+                                    color: secondaryColor.withValues(
+                                      alpha: highContrast ? 1.0 : 0.92,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: accent,
+                            size: 18 * buttonSize,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: contrastColor,
-                size: 24 * buttonSize,
-              ),
-            ],
+            ),
           ),
         ),
       ),
-    ),
     );
   }
 }
-
