@@ -29,15 +29,17 @@ class GameScreenChrome extends StatelessWidget {
     final bg = AccessibilityUtils.getBackgroundColor(context);
     final contrast = AccessibilityUtils.getContrastColor(context);
     final appBarBg = AccessibilityUtils.getAppBarBackgroundColor(context);
+    final buttonSize = AccessibilityUtils.getButtonSize(context);
+    final scaledTitleSize = titleFontSize * buttonSize;
 
     final titleStyle = hc
         ? TextStyle(
-            fontSize: titleFontSize,
+            fontSize: scaledTitleSize,
             fontWeight: FontWeight.bold,
             color: contrast,
           )
         : GoogleFonts.lexend(
-            fontSize: titleFontSize,
+            fontSize: scaledTitleSize,
             fontWeight: FontWeight.w800,
             color: Colors.white,
             height: 1.2,
